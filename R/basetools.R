@@ -27,6 +27,12 @@ mid = function(text, start_num, num_char) {
   substr(text, start_num, start_num + num_char - 1)
 }
 
+fileext <- function(text) {
+  x =strsplit(text,"\\.")
+  i <- length(x[[1]])
+  ext <- x[[1:i]]
+  ext
+}
 
 read <- function(filename) {
   s <- filename
