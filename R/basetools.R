@@ -27,20 +27,65 @@ mid = function(text, start_num, num_char) {
   substr(text, start_num, start_num + num_char - 1)
 }
 
+charcount <- function(pattern,stosearch) {
+  length(attr(gregexpr(pattern,stosearch)[[1]],
+              "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
+}
+
+filename <-function(text) {
+  # remove extension
+
+  # remove path
+
+}
+
 fileext <- function(text) {
-  x =strsplit(text,"\\.")
+  x <- strsplit(text,"\\.")
   i <- length(x[[1]])
-  ext <- x[[1:i]]
+  ext <- x[[1]][i]
   ext
 }
 
 read <- function(filename) {
   s <- filename
+  ext <- fileext(filename)
+  name <-
+  # look at the content
+  test <- read.csv(file = name , nrows = 1)
+  # count and identify separator
+  if (ext == "csv") {
 
+     read.csv(filename)
+  }
+  if (ext == "dta") {
+    # foreign packages is required
+
+  }
 
 }
 
+set.test <- function (x, value) {
+   t <- value
+}
 
+set.global <- function (x, value) {
+  x <- deparse(substitute(x))
+  assign(x, value, pos=.GlobalEnv)
+}
+
+#
+#x <- NA
+#try( x <- ... )
+#if( is.na(x) ) {
+#  ...
+#} else {
+#  ...
+#}
+
+clear <- function() {
+  rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
+  result <- gc()  # garbage collector
+}
 
 freq <- function(varx) {
    distrib <- table(varx)

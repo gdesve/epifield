@@ -1,7 +1,6 @@
 #
-# This is an example function named 'hello'
-#
-#
+# This is the welcome function 'hello'
+# It will give basic information on the package
 #
 
 hello <- function() {
