@@ -14,6 +14,6 @@ This is the welcome function 'hello'
 It will give basic information on the package
 }
 \examples{
-hello()
+\dontrun{hello()}
 
 }

@@ -4,10 +4,10 @@
 #' It will give basic information on the package
 #'
 #' @return Welcome message
-#' @export
+#'
 #'
 #' @examples
-#' hello()
+#' \dontrun{hello()}
 #'
 hello <- function() {
   print("Hello, welcome to epifield package !")
