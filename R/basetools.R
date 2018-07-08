@@ -10,6 +10,21 @@
 # Author : Gilles Desve & al...
 #
 
+# Dataset must be documented
+#'#title Tiramisu outbreak
+#'
+#' A dataset containing the data from an outbreak
+#'
+#' @format A data frame with 291 rows and 22 variables:
+#' \describe{
+#'   \item{age}{Age of cases}
+#'   \item{ill}{outcome variable}
+#'   ...
+#' }
+#' @source
+"tira"
+
+
 
 #' right
 #'
