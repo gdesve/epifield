@@ -10,11 +10,15 @@ test_that("no char count ok", {
 })
 
 test_that("File ext found", {
-  expect_equal(fileext("tira.dta"),"dta")
+  expect_equal(file.ext("tira.dta"),"dta")
+})
+
+test_that("File name found", {
+  expect_equal(file.name("c:/test/tira.dta"),"tira")
 })
 
 test_that("File ext found in path", {
-  expect_equal(fileext("users/test/data.tira.dta"),"dta")
+  expect_equal(file.ext("users/test/data.tira.dta"),"dta")
 })
 
 test_that("Clear memory", {
