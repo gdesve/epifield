@@ -1,8 +1,14 @@
-#
-# This is the welcome function 'hello'
-# It will give basic information on the package
-#
-
+#' Hello
+#'
+#' This is the welcome function 'hello'
+#' It will give basic information on the package
+#'
+#' @return Welcome message
+#' @export
+#'
+#' @examples
+#' hello()
+#'
 hello <- function() {
   print("Hello, welcome to epifield package !")
 }

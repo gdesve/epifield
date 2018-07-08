@@ -21,6 +21,10 @@ test_that("File ext found in path", {
   expect_equal(file.ext("users/test/data.tira.dta"),"dta")
 })
 
+test_that("right of text correct", {
+  expect_equal(right("dummy_test",4),"test")
+})
+
 
 test_that("Clear memory", {
   assign("global.test",5,envir = .GlobalEnv)
