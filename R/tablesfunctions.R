@@ -20,10 +20,6 @@
 #'
 
 
-########################
-##   freq   ##
-########################
-
 freq <- function(varx) {
   distrib <- table(varx)
   prop <- round(distrib / sum(distrib), digits = 2)
