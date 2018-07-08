@@ -39,17 +39,30 @@ filename <-function(text) {
 
 }
 
-fileext <- function(text) {
+file.ext <- function(text) {
   x <- strsplit(text,"\\.")
   i <- length(x[[1]])
   ext <- x[[1]][i]
   ext
 }
 
+file.name <- function(text) {
+  name <- basename(text)
+  x <- strsplit(name,"\\.")
+  i <- length(x[[1]])
+    if (i>1) {
+    ext <- x[[1]][i-1]
+    } else {
+    ext <- name
+  }
+  ext
+}
+
+
 read <- function(filename) {
   s <- filename
-  ext <- fileext(filename)
-  name <-
+  ext <- file.ext(filename)
+  name <- file.name()
   # look at the content
   test <- read.csv(file = name , nrows = 1)
   # count and identify separator
@@ -58,6 +71,7 @@ read <- function(filename) {
   }
   if (ext == "dta") {
     # foreign packages is required
+    require("foreign")
   }
 }
 
@@ -80,10 +94,4 @@ clear <- function() {
   result <- gc()  # garbage collector
 }
 
-freq <- function(varx) {
-   distrib <- table(varx)
-   prop <- round(distrib / sum(distrib), digits = 2)
-   print(distrib)
-   prop
-}
 
