@@ -32,13 +32,6 @@ charcount <- function(pattern,stosearch) {
               "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
 }
 
-filename <-function(text) {
-  # remove extension
-
-  # remove path
-
-}
-
 
 file.ext <- function(text) {
   x <- strsplit(text,"\\.")
@@ -58,21 +51,6 @@ file.name <- function(text) {
   }
   ext
 }
-
-read <- function(filename) {
-  s <- filename
-  ext <- fileext(filename)
-  name <-
-  # look at the content
-  test <- read.csv(file = name , nrows = 1)
-  # count and identify separator
-  if (ext == "csv") {
-
-     read.csv(filename)
-  }
-  if (ext == "dta") {
-    # foreign packages is required
-  }
 
 read <- function(filename) {
   s <- filename
@@ -107,6 +85,7 @@ set.global <- function (x, value) {
 #} else {
 #  ...
 #}
+
 
 clear <- function() {
   rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
