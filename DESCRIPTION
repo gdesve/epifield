@@ -8,8 +8,9 @@ Description: Designed to help epidemiologist switching from EPI6/STATA to R
     Reproduce some usual functions for outbreak investigation.
     Provide feedback on console regarding R command 
     Provide advices for beginners
-Depends: R (>= 3.0.0), foreign, utils
-License: GNU
+Depends: R (>= 3.0.0), utils
+Imports: foreign
+License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 Suggests:

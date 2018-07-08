@@ -10,10 +10,6 @@
 # Author : Gilles Desve & al...
 #
 
-r <- requireNamespace("utils", quietly = TRUE)
-if (!r) {
-  message("Package utils required")
-}
 
 #' right
 #'
@@ -27,6 +23,9 @@ if (!r) {
 #' \dontrun{
 #' right("dummy_test",4)
 #' }
+#' @importFrom foreign read.dta
+#' @importFrom utils ls.str
+#'
 right = function (text, num_char){
   substr(text,nchar(text)-(num_char-1),nchar(text))
 }
@@ -70,14 +69,18 @@ read <- function(filename) {
   ext <- file.ext(filename)
   name <- file.name()
   # look at the content
-  test <- read.csv(file = name , nrows = 1)
+  test <- utils::read.csv(file = name , nrows = 1)
   # count and identify separator
   if (ext == "csv") {
-     read.csv(filename)
+     utils::read.csv(filename)
   }
   if (ext == "dta") {
     # foreign packages is required
-    require("foreign")
+    r <- requireNamespace("foreign", quietly = TRUE)
+    if (!r) {
+      message("Package foreign required")
+    }
+    foreign::read.dta(filename)
   }
 }
 
@@ -105,9 +108,5 @@ clear <- function() {
   result <- gc()  # garbage collector
 }
 
-clear <- function() {
-  rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
-  result <- gc()  # garbage collector
-}
 
 
