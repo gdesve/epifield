@@ -17,11 +17,31 @@
 #'
 #' @format A data frame with 291 rows and 22 variables:
 #' \describe{
+#'   \item{X}{Sequential number}
 #'   \item{age}{Age of cases}
 #'   \item{ill}{outcome variable}
-#'   ...
+#'   \item{dateonset}{outcome variable}
+#'   \item{sex}{outcome variable}
+#'   \item{tira}{outcome variable}
+#'   \item{tportion}{outcome variable}
+#'   \item{wmousse}{outcome variable}
+#'   \item{dmousse}{outcome variable}
+#'   \item{mousse}{outcome variable}
+#'   \item{mportion}{outcome variable}
+#'   \item{beer}{outcome variable}
+#'   \item{uniquekey}{outcome variable}
+#'   \item{redjelly}{outcome variable}
+#'   \item{fruitsalad}{outcome variable}
+#'   \item{tomato}{outcome variable}
+#'   \item{mince}{outcome variable}
+#'   \item{salmon}{outcome variable}
+#'   \item{horseradish}{outcome variable}
+#'   \item{chickenwin}{outcome variable}
+#'   \item{roastbeef}{outcome variable}
+#'   \item{pork}{outcome variable}
+#'
 #' }
-#' @source
+#' @source  Epiet case study
 "tira"
 
 
@@ -103,10 +123,6 @@ set.test <- function (x, value) {
    t <- value
 }
 
-set.global <- function (x, value) {
-  x <- deparse(substitute(x))
-  assign(x, value, pos=.GlobalEnv)
-}
 
 #
 #x <- NA
@@ -123,5 +139,30 @@ clear <- function() {
   result <- gc()  # garbage collector
 }
 
+setepifield <- function(env) {
+  epifieldEnv <- new.env(parent = .GlobalEnv)
+  epifieldEnv$option <- TRUE
+}
+
+
+test <- function(varname) {
+  var <- deparse(substitute(varname))
+  if (exists(var)) {
+    return(varname) }
+  else  {
+    r<-try(value <- varname,TRUE)
+    if (!inherits(r, "try-error")){
+      return(r)
+    } else {
+      df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+      if (length(df)>0) {
+         dfvar <- paste(df,"$",var ,sep="")
+         return(eval(parse(text=dfvar)))
+      } else  {
+      cat(var , "is not defined")
+      }
+    }
+  }
+}
 
 
