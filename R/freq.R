@@ -13,8 +13,8 @@
 #'
 #' @seealso \code{\link{table}} for 2by2 tables
 #'
-#' @param varx A number, factor or text
-#' @return An array containing  values of \code{varx}   \code{}
+#' @param ... A number, factor or text
+#' @return An array containing  values of \code{...}   \code{}
 #' @examples
 #' \dontrun{
 #' freq(c(3,1,2,2,5))
@@ -22,12 +22,26 @@
 #'
 #'
 
-
 freq <- function(...) {
   var <- getvar(...)
-  distrib <- table(var, exclude = NULL)
-  prop <- round(distrib / sum(distrib), digits = 2)
-  print(distrib)
-  invisible(prop)
+  count <- table(var, exclude = NULL)
+  prop <- round(prop.table(count)*100, digits = 2)
+  cum <- cumsum(prop)
+  result <- cbind(count,
+                  prop,
+                  cum)
+  colnames(result) <- c("Freq", "%" , "cum%")
+  result = rbind(result,Totals = colSums(result))
+  result[nrow(result),ncol(result)] <- 100
+  print(result)
+  invisible(result)
 }
+
+printtable <- function(table)  {
+
+
+}
+
+
+
 

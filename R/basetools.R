@@ -181,4 +181,39 @@ getvar <- function(varname) {
   }
 }
 
+d.line <- function() {
+  cat("-----------------------------------------------------------\n")
+}
+
+getdf <- function(varname) {
+  .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+  ndf <- length(.df)
+  j <- 1
+  nfound <- 0
+  while(j <= ndf) {
+    ifound <- grep(varname,names(get(.df[j])))
+    if (length(ifound)>0) {
+      dfname <- .df[j]
+      nfound <- nfound + 1
+    }
+    # cat(.df[j]," ",ifound," ",nfound," ",dfname)
+    j <- j+1
+  }
+  if (nfound == 1) {
+    dfvar <- paste(dfname,"$",varname ,sep="")
+    return(eval(parse(text=dfvar)))
+  } else {
+    if (nfound > 1) {
+      cat(var ," is ambigous")
+    } else {
+      cat(var , "is not defined")
+    }
+  }
+}
+
+rename <- function(oldname,newname) {
+
+  names(data) <- sub(oldname, newname, names(data))
+
+}
 
