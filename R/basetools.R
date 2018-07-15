@@ -145,7 +145,7 @@ setepifield <- function(env) {
 }
 
 
-test <- function(varname) {
+getvar <- function(varname) {
   var <- deparse(substitute(varname))
   if (exists(var)) {
     return(varname) }
@@ -154,12 +154,28 @@ test <- function(varname) {
     if (!inherits(r, "try-error")){
       return(r)
     } else {
-      df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-      if (length(df)>0) {
-         dfvar <- paste(df,"$",var ,sep="")
+      .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+      ndf <- length(.df)
+      j <- 1
+      nfound <- 0
+      while(j <= ndf) {
+        ifound <- grep(var,names(get(.df[j])))
+        if (length(ifound)>0) {
+          dfname <- .df[j]
+          nfound <- nfound + 1
+        }
+        # cat(.df[j]," ",ifound," ",nfound," ",dfname)
+        j <- j+1
+      }
+      if (nfound == 1) {
+         dfvar <- paste(dfname,"$",var ,sep="")
          return(eval(parse(text=dfvar)))
-      } else  {
-      cat(var , "is not defined")
+      } else {
+        if (nfound > 1) {
+          cat(var ," is ambigous")
+        } else {
+          cat(var , "is not defined")
+        }
       }
     }
   }
