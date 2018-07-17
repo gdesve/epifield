@@ -44,6 +44,63 @@
 #' @source  Epiet case study
 "tira"
 
+epif_env <- new.env(parent = emptyenv())
+
+epif_env$start <- 1
+epif_env$end <- 2
+
+#' get_epif
+#'
+#' retrieve a package option
+#'
+#' @param op name of the option to retrieve
+#' @export
+#' @return  option value
+#' @examples
+#' get_epif("option")
+#'
+#'
+get_epif <- function(op) {
+  s_op <- deparse(substitute(op))
+  if ( exists(s_op)) {
+      if (is.character(op)) {
+        s_op <- op
+      }
+  }
+  if (match(s_op, ls(envir = epif_env),nomatch=0) ) {
+     eval(parse(text=paste0("epif_env$",s_op)))
+  } else {
+    warning("Option unavailable")
+  }
+}
+
+#' set_epif
+#'
+#' assign a package option
+#'
+#' @param op name of the option to assign
+#' @param value The value to be assigned to option
+#' @export
+#' @return  option value
+#' @examples
+#' set_epif("option",1)
+#'
+#'
+
+set_epif <- function(op, value) {
+  s_op <- deparse(substitute(op))
+  if ( exists(s_op)) {
+    if (is.character(op)) {
+      s_op <- op
+    }
+  }
+  old <- NA
+  eval(parse(text=paste0("old <- epif_env$",s_op)))
+  eval(parse(text=paste0("epif_env$",s_op ,"<- value")))
+
+  invisible(old)
+}
+
 
 
 #' right
@@ -119,10 +176,6 @@ read <- function(filename) {
   }
 }
 
-set.test <- function (x, value) {
-   t <- value
-}
-
 
 #
 #x <- NA
@@ -137,11 +190,6 @@ set.test <- function (x, value) {
 clear <- function() {
   rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
   result <- gc()  # garbage collector
-}
-
-setepifield <- function(env) {
-  epifieldEnv <- new.env(parent = .GlobalEnv)
-  epifieldEnv$option <- TRUE
 }
 
 
@@ -185,6 +233,7 @@ d.line <- function() {
   cat("-----------------------------------------------------------\n")
 }
 
+
 getdf <- function(varname) {
   .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
   ndf <- length(.df)
@@ -204,9 +253,9 @@ getdf <- function(varname) {
     return(eval(parse(text=dfvar)))
   } else {
     if (nfound > 1) {
-      cat(var ," is ambigous")
+      cat(varname ," is ambigous")
     } else {
-      cat(var , "is not defined")
+      cat(varname , "is not defined")
     }
   }
 }

@@ -12,7 +12,7 @@
 #' available at \url{https://github.com/}.
 #'
 #' @seealso \code{\link{table}} for 2by2 tables
-#'
+#' @export
 #' @param ... A number, factor or text
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
