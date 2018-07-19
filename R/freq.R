@@ -24,20 +24,24 @@
 
 freq <- function(...) {
   var <- getvar(...)
-  count <- table(var, exclude = NULL)
-  prop <- round(prop.table(count)*100, digits = 2)
-  cum <- cumsum(prop)
-  result <- cbind(count,
-                  prop,
-                  cum)
-  colnames(result) <- c("Freq", "%" , "cum%")
-  result = rbind(result,Totals = colSums(result))
-  result[nrow(result),ncol(result)] <- 100
-  print(result)
-  invisible(result)
+  if (! is.null(var)) {
+    count <- table(var, exclude = NULL)
+    prop <- round(prop.table(count)*100, digits = 2)
+    cum <- cumsum(prop)
+    result <- cbind(count,
+                    prop,
+                    cum)
+    colnames(result) <- c("Freq", "%" , "cum%")
+    result = rbind(result,Totals = colSums(result))
+    result[nrow(result),ncol(result)] <- 100
+
+    # outputtable(result)
+    print(result)
+    invisible(result)
+  }
 }
 
-printtable <- function(table)  {
+outputtable <- function(table)  {
 
 
 }

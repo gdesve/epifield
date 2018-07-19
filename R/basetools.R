@@ -49,7 +49,7 @@ epif_env <- new.env(parent = emptyenv())
 epif_env$start <- 1
 epif_env$end <- 2
 
-#' get_epif
+#' get_option
 #'
 #' retrieve a package option
 #'
@@ -57,10 +57,10 @@ epif_env$end <- 2
 #' @export
 #' @return  option value
 #' @examples
-#' get_epif("option")
+#' get_option("option")
 #'
 #'
-get_epif <- function(op) {
+get_option <- function(op) {
   s_op <- deparse(substitute(op))
   if ( exists(s_op)) {
       if (is.character(op)) {
@@ -74,7 +74,7 @@ get_epif <- function(op) {
   }
 }
 
-#' set_epif
+#' set_option
 #'
 #' assign a package option
 #'
@@ -83,11 +83,11 @@ get_epif <- function(op) {
 #' @export
 #' @return  option value
 #' @examples
-#' set_epif("option",1)
+#' set_option("option",1)
 #'
 #'
 
-set_epif <- function(op, value) {
+set_option <- function(op, value) {
   s_op <- deparse(substitute(op))
   if ( exists(s_op)) {
     if (is.character(op)) {
@@ -100,7 +100,6 @@ set_epif <- function(op, value) {
 
   invisible(old)
 }
-
 
 
 #' right
@@ -131,6 +130,7 @@ mid = function(text, start_num, num_char) {
   substr(text, start_num, start_num + num_char - 1)
 }
 
+# count number of specific char into a text
 charcount <- function(pattern,stosearch) {
   length(attr(gregexpr(pattern,stosearch)[[1]],
               "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
@@ -140,40 +140,60 @@ charcount <- function(pattern,stosearch) {
 file.ext <- function(text) {
   x <- strsplit(text,"\\.")
   i <- length(x[[1]])
-  ext <- x[[1]][i]
+  ext <- ""
+  if (i>1) {
+    ext <- x[[1]][i]
+  }
   ext
 }
 
 file.name <- function(text) {
   name <- basename(text)
   x <- strsplit(name,"\\.")
-  i <- length(x[[1]])
-    if (i>1) {
-    ext <- x[[1]][i-1]
-    } else {
-    ext <- name
-  }
-  ext
+  x[[1]][1]
 }
 
-read <- function(filename) {
+#'  use
+#'
+#'  read a data.frame
+#'
+#' @export
+#' @param filename  Name of file to be read
+#' @examples
+#' fil <- tempfile(fileext = ".data")
+#' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
+#' sep = "\n")
+#' readLines(fil, n = -1)
+#' unlink(fil) # tidy up
+#'
+
+
+use <- function(filename) {
+  # try to find a name...
   s <- filename
   ext <- file.ext(filename)
-  name <- file.name()
-  # look at the content
-  test <- utils::read.csv(file = name , nrows = 1)
-  # count and identify separator
+  name <- file.name(filename)
+
   if (ext == "csv") {
-     utils::read.csv(filename)
+    # look at the content
+    # count and identify separator
+    test <- readLines(filename , n = 3)
+    comma1 <- charcount(",",test[1])
+    comma2 <- charcount(",",test[2])
+    if (comma1 > 0 & comma1 == comma2) {
+       df <- utils::read.csv(filename)
+    }
   }
   if (ext == "dta") {
-    # foreign packages is required
-    r <- requireNamespace("foreign", quietly = TRUE)
-    if (!r) {
-      message("Package foreign required")
-    }
-    foreign::read.dta(filename)
-  }
+      # foreign packages is required
+      r <- requireNamespace("foreign", quietly = TRUE)
+      if (!r) {
+        message("Package foreign required")
+      }
+      df <- foreign::read.dta(filename)
+   }
+  utils::head(df)
+  invisible(df)
 }
 
 
@@ -192,42 +212,52 @@ clear <- function() {
   result <- gc()  # garbage collector
 }
 
-
+#internal function to retrieve dataset variables
 getvar <- function(varname) {
   var <- deparse(substitute(varname))
+  # if var exists it is returned as is
   if (exists(var)) {
     return(varname) }
   else  {
+    # var doesn't exist.. may be it's a formula ?
     r<-try(value <- varname,TRUE)
     if (!inherits(r, "try-error")){
+      # it's a formula ... it's evaluation is returned
       return(r)
     } else {
+      # may be varname is part of a dataset ?
       .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
       ndf <- length(.df)
       j <- 1
       nfound <- 0
+      dffound <- ""
       while(j <= ndf) {
         ifound <- grep(var,names(get(.df[j])))
         if (length(ifound)>0) {
           dfname <- .df[j]
           nfound <- nfound + 1
+          # list of dataset containing varname
+          dffound <- paste0(dffound,ifelse(dffound=="","",", "),dfname)
         }
-        # cat(.df[j]," ",ifound," ",nfound," ",dfname)
         j <- j+1
       }
+      # only one ? great
       if (nfound == 1) {
          dfvar <- paste(dfname,"$",var ,sep="")
          return(eval(parse(text=dfvar)))
       } else {
         if (nfound > 1) {
-          cat(var ," is ambigous")
+          warning(paste(var ,"is an ambigous name and exists in following dataset :", dffound),call.=FALSE)
+          return(NULL)
         } else {
-          cat(var , "is not defined")
+          warning(paste(var , "is not defined"),call.=FALSE)
+          return(NULL)
         }
       }
     }
   }
 }
+
 
 d.line <- function() {
   cat("-----------------------------------------------------------\n")
