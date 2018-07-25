@@ -49,6 +49,14 @@ epif_env <- new.env(parent = emptyenv())
 epif_env$start <- 1
 epif_env$end <- 2
 
+SEP   <- "|"
+CROSS <- "+"
+LINE  <- "-"
+FIRST <- 12
+COL   <- 8
+
+epif_env$last_var <- ""
+
 #' get_option
 #'
 #' retrieve a package option
@@ -130,12 +138,24 @@ mid = function(text, start_num, num_char) {
   substr(text, start_num, start_num + num_char - 1)
 }
 
-# count number of specific char into a text
+# count number of specific char into a text using reg expr
 charcount <- function(pattern,stosearch) {
-  length(attr(gregexpr(pattern,stosearch)[[1]],
-              "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
+  lengths(regmatches(stosearch, gregexpr(pattern, stosearch)))
+  # length(attr(gregexpr(pattern,stosearch)[[1]],
+  #            "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
 }
 
+replicate <- function(char,ntime) {
+  paste(rep(char,ntime),collapse="")
+}
+
+lpad <- function(value,width = 11, digit = 0) {
+  r <- format(format(value,nsmall=digit),width = width ,justify="right")
+  if (is.character(value) & (nchar(r) > width )) {
+    r <- paste0(substr(r,1,width-2),"..")
+  }
+  return(r)
+}
 
 file.ext <- function(text) {
   x <- strsplit(text,"\\.")
@@ -155,10 +175,12 @@ file.name <- function(text) {
 
 #'  use
 #'
-#'  read a data.frame
+#'  read a data.frame.
+#'  The function try to identify the file structure in order to call the appropriate specific
+#'  command
 #'
 #' @export
-#' @param filename  Name of file to be read
+#' @param filename  Name of file to be read. Type is defined by extension
 #' @examples
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
@@ -168,32 +190,50 @@ file.name <- function(text) {
 #'
 
 
-use <- function(filename) {
-  # try to find a name...
+use <- function(filename="") {
+  # no file ? choose one
+  if (filename=="") {
+    filename <- file.choose()
+  }
+  # try to extract name...
   s <- filename
   ext <- file.ext(filename)
   name <- file.name(filename)
-
-  if (ext == "csv") {
-    # look at the content
-    # count and identify separator
-    test <- readLines(filename , n = 3)
-    comma1 <- charcount(",",test[1])
-    comma2 <- charcount(",",test[2])
-    if (comma1 > 0 & comma1 == comma2) {
-       df <- utils::read.csv(filename)
-    }
-  }
-  if (ext == "dta") {
-      # foreign packages is required
-      r <- requireNamespace("foreign", quietly = TRUE)
-      if (!r) {
-        message("Package foreign required")
+  if ( file.exists(filename)) {
+    # file exists.. let's go
+    if (ext == "csv") {
+      # look at the content
+      # count and identify separator
+      test <- readLines(filename , n = 2)
+      comma1 <- charcount(",",test[1])
+      semicol1 <- charcount(";",test[1])
+      comma2 <- charcount(",",test[2])
+      semicol2 <- charcount(";",test[2])
+      if (comma1 > 0 ) {
+         df <- utils::read.csv(filename)
       }
-      df <- foreign::read.dta(filename)
-   }
-  utils::head(df)
-  invisible(df)
+      if (semicol1  > 0 ) {
+        df <- utils::read.csv2(filename)
+      }
+    }
+    if (ext == "dta") {
+        # foreign packages is required
+        r <- requireNamespace("foreign", quietly = TRUE)
+        if (!r) {
+          message("Package foreign required")
+        }
+        df <- foreign::read.dta(filename)
+    }
+    fileatt <- dim(df)
+    cat("File ",filename," loaded. \n")
+    cat(fileatt[1], "Observations of ",fileatt[2]," variables. Use str(name) for details")
+    invisible(df)
+  } else {
+    # file doens't exists ??
+    cat("File \"",filename,"\" doesn't exist.\n", sep="")
+    cat("Verify your working directory. Current is", getwd())
+
+  }
 }
 
 
@@ -213,8 +253,12 @@ clear <- function() {
 }
 
 #internal function to retrieve dataset variables
-getvar <- function(varname) {
+getvar <- function(varname=NULL) {
   var <- deparse(substitute(varname))
+  if ( var=="NULL" ) {
+    return(epif_env$last_var)
+  }
+  epif_env$last_var <- var
   # if var exists it is returned as is
   if (exists(var)) {
     return(varname) }
@@ -244,6 +288,7 @@ getvar <- function(varname) {
       # only one ? great
       if (nfound == 1) {
          dfvar <- paste(dfname,"$",var ,sep="")
+         epif_env$last_var <- dfvar
          return(eval(parse(text=dfvar)))
       } else {
         if (nfound > 1) {
@@ -259,9 +304,48 @@ getvar <- function(varname) {
 }
 
 
-d.line <- function() {
-  cat("-----------------------------------------------------------\n")
+tab_line <- function(ncol,tot=FALSE) {
+  l1 <- replicate(LINE,FIRST+1)
+  l2 <- replicate(LINE,(ncol-1)*(COL+1))
+  l3 <- ifelse(tot,CROSS,LINE)
+  l4 <- replicate(LINE,COL+1)
+  cat(l1,CROSS,l2,l3,l4,"\n",sep ="")
 }
+
+tab_row <- function(rname,line,deci,tot=FALSE) {
+  l <- length(line)
+  cat(lpad(rname,FIRST))
+  cat("",SEP)
+  for (i in 1:(l-1)) {
+    cat(lpad(line[i],COL,digit = deci[i])," ")
+  }
+  if (tot) cat(COL)
+  cat(lpad(line[l],COL,digit = deci[l]))
+  cat("\n")
+}
+
+
+outputtable <- function(table,deci=NULL,tot=FALSE,title="Frequency distribution",subtitle="" )  {
+
+  cat(title,"\n")
+  ncol <- dim(table)[2]
+  nline <- dim(table)[1]
+  coln <- colnames(table)
+  rown <- rownames(table)
+
+  if (is.null(deci)) {
+    deci[1:nline] <- 0
+  }
+  # Les entêtes de colonne
+  tab_row(subtitle,coln,deci,tot)
+  tab_line(ncol,tot)
+  for (i in (1:(nline-1))) {
+    tab_row(rown[i],table[i,],deci,tot)
+  }
+  tab_line(ncol,tot)
+  tab_row(rown[nline],table[nline,],deci,tot)
+}
+
 
 
 getdf <- function(varname) {

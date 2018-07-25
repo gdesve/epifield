@@ -3,7 +3,7 @@
 #' Frequency distribution.
 #' @description
 #' \code{freq} Display a frequency distribution.
-#'
+#' #'
 #'
 #' @name freq
 #'
@@ -13,9 +13,10 @@
 #'
 #' @seealso \code{\link{table}} for 2by2 tables
 #' @export
-#' @param ... A number, factor or text
+#' @param ... As numbers, factors or text.
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
+#' freq(c(3,1,2,2,5))
 #' \dontrun{
 #' freq(c(3,1,2,2,5))
 #' }
@@ -31,21 +32,17 @@ freq <- function(...) {
     result <- cbind(count,
                     prop,
                     cum)
+    vname <- getvar()
     colnames(result) <- c("Freq", "%" , "cum%")
-    result = rbind(result,Totals = colSums(result))
+    result <- rbind(result,Totals = colSums(result))
+    deci <- c(0,2,2)
     result[nrow(result),ncol(result)] <- 100
-
-    # outputtable(result)
-    print(result)
+    title <- paste("Frequency distribution of ")
+    outputtable(result,deci,tot=FALSE,title,subtitle=vname)
+    # print(result)
     invisible(result)
   }
 }
-
-outputtable <- function(table)  {
-
-
-}
-
 
 
 
