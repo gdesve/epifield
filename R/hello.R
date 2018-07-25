@@ -5,7 +5,6 @@
 #'
 #' @return Welcome message
 #'
-#'
 #' @examples
 #' \dontrun{hello()}
 #'
