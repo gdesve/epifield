@@ -26,12 +26,14 @@
 freq <- function(...) {
   var <- getvar(...)
   if (! is.null(var)) {
-    count <- table(var, exclude = NULL)
+    count <- table(var, useNA="no")
+    tot <- length(var)
     prop <- round(prop.table(count)*100, digits = 2)
     cum <- cumsum(prop)
     result <- cbind(count,
                     prop,
                     cum)
+    mis  <- sum(is.na(var))
     vname <- getvar()
     colnames(result) <- c("Freq", "%" , "cum%")
     result <- rbind(result,Totals = colSums(result))
@@ -39,6 +41,7 @@ freq <- function(...) {
     result[nrow(result),ncol(result)] <- 100
     title <- paste("Frequency distribution of ")
     outputtable(result,deci,tot=FALSE,title,subtitle=vname)
+    cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
     # print(result)
     invisible(result)
   }
