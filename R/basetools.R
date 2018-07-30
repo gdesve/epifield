@@ -96,17 +96,31 @@ get_option <- function(op) {
 #'
 
 set_option <- function(op, value) {
+  # we get op as symbol
   s_op <- deparse(substitute(op))
+  # if op is a variable wich contain char, we use content of op
   if ( exists(s_op)) {
     if (is.character(op)) {
       s_op <- op
     }
   }
   old <- NA
+
   eval(parse(text=paste0("old <- epif_env$",s_op)))
   eval(parse(text=paste0("epif_env$",s_op ,"<- value")))
 
   invisible(old)
+}
+
+setdataset <- function(df=NULL) {
+    if (is.data.frame(df)) {
+      # tester si le dataset est bien nommé et n'a pas été construit en direct
+       epif_env$dataset <- substitute(df)
+    }
+    # si on passe le nom alors c'est bon, on le recupère direct
+
+  # pour finir verifier que df fait bien partie de l'environnement
+
 }
 
 
@@ -247,8 +261,22 @@ use <- function(filename="") {
 #}
 
 
-clear <- function() {
-  rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
+#'  @title clear
+#'
+#'  clear memory for beginner.
+#'
+#'
+#' @export
+#' @param all  if all function are also removed from memory
+#'
+#'
+clear <- function(all=FALSE) {
+  arg <- as.list(match.call())
+  if ((!is.null(arg[["all"]]))  ) {
+    rm(list=ls(.GlobalEnv),envir=.GlobalEnv)
+  } else {
+    rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
+  }
   result <- gc()  # garbage collector
 }
 
@@ -373,6 +401,7 @@ getdf <- function(varname) {
     }
   }
 }
+
 
 rename <- function(oldname,newname) {
 
