@@ -88,14 +88,49 @@ adddf <- function(explist) {
 
 #inline assignement (returned value must be the passed objet)
 `recode<-` <- function(x, where, value) {
-  x[where] <- value
+
+  r <- if (missing(where))
+    rep_len(TRUE, nrow(x))
+  else {
+    e <- substitute(where)
+    r <- eval(e, x, parent.frame())
+    if (!is.logical(r))
+      stop("'where' must be logical")
+    r & !is.na(r)
+  }
+
+  x[r,] <- value
   x
 }
 
-
 count  <- function(expr) {
-   sum(expr, na.rm = TRUE)
+  sum(expr, na.rm = TRUE)
 }
+
+test  <- function(expr) {
+   # print(as.list(match.call()))
+   r<-try(eval(expr),TRUE)
+   if (inherits(r, "try-error")){
+      # it's not a correct formula ... try to do better
+     call <- as.call(list(sum,substitute(expr),na.rm = TRUE))
+     env <- get_option(dataset)
+     if (is.character(env) & ! env=="") {
+        env <- eval(parse(text=env)) # epif_env$dataset
+        r <- eval(call,env,parent.frame())
+     }
+    } else {  # formula is correct ... dont't change anything
+      r <- sum(expr,na.rm=TRUE)
+   }
+   r
+   # if (is.logical(expr) ) print(TRUE)
+}
+
+test2 <- function() {
+   print(sys.calls())
+   3
+}
+
+
 
 dat = data.frame(sCode = c("CA", "CA", "AC"))
 nrow(dat[dat$sCode == "CA",])

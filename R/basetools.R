@@ -113,14 +113,23 @@ set_option <- function(op, value) {
 }
 
 setdataset <- function(df=NULL) {
+    if (missing(df)) {
+       return(get_option(dataset))
+      break
+    }
     if (is.data.frame(df)) {
       # tester si le dataset est bien nommé et n'a pas été construit en direct
-       epif_env$dataset <- substitute(df)
+      e <- as.character(substitute(df))
+      if (sum(match(ls.str(.GlobalEnv,mode="list"),e),na.rm=TRUE) > 0 ) {
+             set_option(dataset,substitute(df))
+      } else {
+         stop("erreur dataset name is incorrect")
+      }
+    } else if (is.character(df)) {
+      # si on passe le nom alors c'est bon, on le recupère direct
+      set_option(dataset,df)
     }
-    # si on passe le nom alors c'est bon, on le recupère direct
-
-  # pour finir verifier que df fait bien partie de l'environnement
-
+    # pour finir verifier que df fait bien partie de l'environnement
 }
 
 
