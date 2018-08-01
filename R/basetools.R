@@ -44,6 +44,24 @@
 #' @source  Epiet case study
 "tira"
 
+# Dataset must be documented
+#'#title Test sample from Tiramisu outbreak
+#'
+#' A dataset containing somedata for testing purpose
+#'
+#' @format A data frame with 10 rows and 5 variables:
+#' \describe{
+#'   \item{X}{Sequential number}
+#'   \item{age}{Age of cases}
+#'   \item{sex}{outcome variable}
+#'   \item{tira}{outcome variable}
+#'   \item{beer}{outcome variable}
+#'
+#' }
+#' @source  Epiet case study
+"test"
+
+
 epif_env <- new.env(parent = emptyenv())
 
 epif_env$start <- 1
@@ -112,34 +130,59 @@ set_option <- function(op, value) {
   invisible(old)
 }
 
-setdataset <- function(df=NULL) {
+#' setdata
+#'
+#' assign a data.frame as default dataframe
+#'
+#' @param df name of the dataframe to assign
+#' @export
+#' @return  current df name
+#' @examples
+#' df <-as.data.frame(c(1,2))
+#' setdata(df)
+#' rm(df)
+#'
+
+setdata <- function(df=NULL) {
     if (missing(df)) {
-       return(get_option(dataset))
-      break
-    }
-    if (is.data.frame(df)) {
+       return(get_option("dataset"))
+    } else if (is.data.frame(df)) {
       # tester si le dataset est bien nommé et n'a pas été construit en direct
       e <- as.character(substitute(df))
       if (sum(match(ls.str(.GlobalEnv,mode="list"),e),na.rm=TRUE) > 0 ) {
-             set_option(dataset,substitute(df))
+             set_option("dataset",substitute(df))
       } else {
          stop("erreur dataset name is incorrect")
       }
     } else if (is.character(df)) {
       # si on passe le nom alors c'est bon, on le recupère direct
-      set_option(dataset,df)
+      set_option("dataset",df)
     }
     # pour finir verifier que df fait bien partie de l'environnement
 }
 
 
+
+
+#' Title count
+#'
+#' count number of record / row corresponding to expr
+#'
+#' @param expr A logical expression
+#'
+#' @return Number of rows macthing expr
+#' @export
+#'
+#' @examples
+#' count(c(1,2,3,1)==1)
+#'
 count <- function(expr) {
   # print(as.list(match.call()))
   r<-try(eval(expr),TRUE)
   if (inherits(r, "try-error")){
     # it's not a correct formula ... try to do better
     call <- as.call(list(sum,substitute(expr),na.rm = TRUE))
-    env <- get_option(dataset)
+    env <- get_option("dataset")
     if (is.character(env) & ! env=="") {
       env <- eval(parse(text=env)) # epif_env$dataset
       r <- eval(call,env,parent.frame())
