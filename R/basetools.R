@@ -133,6 +133,32 @@ setdataset <- function(df=NULL) {
 }
 
 
+count <- function(expr) {
+  # print(as.list(match.call()))
+  r<-try(eval(expr),TRUE)
+  if (inherits(r, "try-error")){
+    # it's not a correct formula ... try to do better
+    call <- as.call(list(sum,substitute(expr),na.rm = TRUE))
+    env <- get_option(dataset)
+    if (is.character(env) & ! env=="") {
+      env <- eval(parse(text=env)) # epif_env$dataset
+      r <- eval(call,env,parent.frame())
+    }
+  } else {  # formula is correct ... dont't change anything
+    r <- sum(expr,na.rm=TRUE)
+  }
+  r
+  # if (is.logical(expr) ) print(TRUE)
+}
+
+# Another possibility would be to complete expr with getdf / setdata
+# r<-try(eval(sum(heu == 2)))
+# r[1] : Error in eval(sum(heu == 2)) : objet 'heu' introuvable
+# substr(expr , heu ) <-  tira$heu
+
+
+
+
 #' right
 #'
 #' Extract x rigth characters from a text

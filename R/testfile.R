@@ -103,27 +103,6 @@ adddf <- function(explist) {
   x
 }
 
-count  <- function(expr) {
-  sum(expr, na.rm = TRUE)
-}
-
-test  <- function(expr) {
-   # print(as.list(match.call()))
-   r<-try(eval(expr),TRUE)
-   if (inherits(r, "try-error")){
-      # it's not a correct formula ... try to do better
-     call <- as.call(list(sum,substitute(expr),na.rm = TRUE))
-     env <- get_option(dataset)
-     if (is.character(env) & ! env=="") {
-        env <- eval(parse(text=env)) # epif_env$dataset
-        r <- eval(call,env,parent.frame())
-     }
-    } else {  # formula is correct ... dont't change anything
-      r <- sum(expr,na.rm=TRUE)
-   }
-   r
-   # if (is.logical(expr) ) print(TRUE)
-}
 
 test2 <- function() {
    print(sys.calls())
