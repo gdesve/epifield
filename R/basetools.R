@@ -87,18 +87,31 @@ epif_env$last_var <- ""
 #'
 #'
 get_option <- function(op) {
-  s_op <- deparse(substitute(op))
-  if ( exists(s_op)) {
-      if (is.character(op)) {
-        s_op <- op
-      }
+  s_op <- as.character(substitute(op))
+  if (exists(s_op)) {
+    if (is.character(op)) {
+      s_op <- op
+    }
   }
-  if (match(s_op, ls(envir = epif_env),nomatch=0) ) {
-     eval(parse(text=paste0("epif_env$",s_op)))
+  if (match(s_op, ls(envir = epif_env), nomatch = 0)) {
+    eval(parse(text = paste0("epif_env$", s_op)))
   } else {
     warning("Option unavailable")
   }
 }
+
+#' list_option
+#'
+#' retrieve all package option
+#'
+#' @export
+#' @return  list of option values
+#' @examples
+#' list_option()
+#'
+#'
+
+list_option <- function() ls(envir = epif_env)
 
 #' set_option
 #'
@@ -117,15 +130,15 @@ set_option <- function(op, value) {
   # we get op as symbol
   s_op <- deparse(substitute(op))
   # if op is a variable wich contain char, we use content of op
-  if ( exists(s_op)) {
+  if (exists(s_op)) {
     if (is.character(op)) {
       s_op <- op
     }
   }
   old <- NA
 
-  eval(parse(text=paste0("old <- epif_env$",s_op)))
-  eval(parse(text=paste0("epif_env$",s_op ,"<- value")))
+  eval(parse(text = paste0("old <- epif_env$", s_op)))
+  eval(parse(text = paste0("epif_env$", s_op , "<- value")))
 
   invisible(old)
 }
@@ -143,22 +156,26 @@ set_option <- function(op, value) {
 #' rm(df)
 #'
 
-setdata <- function(df=NULL) {
-    if (missing(df)) {
-       return(get_option("dataset"))
-    } else if (is.data.frame(df)) {
-      # tester si le dataset est bien nommé et n'a pas été construit en direct
-      e <- as.character(substitute(df))
-      if (sum(match(ls.str(.GlobalEnv,mode="list"),e),na.rm=TRUE) > 0 ) {
-             set_option("dataset",substitute(df))
-      } else {
-         stop("erreur dataset name is incorrect")
-      }
-    } else if (is.character(df)) {
-      # si on passe le nom alors c'est bon, on le recupère direct
-      set_option("dataset",df)
+setdata <- function(df = NULL) {
+  if (missing(df)) {
+    return(get_option("dataset"))
+  } else if (is.data.frame(df)) {
+    # tester si le dataset est bien nommé et n'a pas été construit en direct
+    e <- as.character(substitute(df))
+    if (sum(match(ls.str(.GlobalEnv, mode = "list"), e), na.rm = TRUE) > 0) {
+      set_option("dataset", substitute(df))
+    } else {
+      stop("erreur dataset name is incorrect")
     }
-    # pour finir verifier que df fait bien partie de l'environnement
+  } else if (is.character(df)) {
+    # si on passe le nom alors on le recupère direct
+    if (exists(df)) {
+      if (is.data.frame(get(df))) {
+         set_option("dataset", df)
+      } else cat(df , " is not a data.frame")
+    }
+  }
+  # pour finir verifier que df fait bien partie de l'environnement
 }
 
 
@@ -174,21 +191,22 @@ setdata <- function(df=NULL) {
 #' @export
 #'
 #' @examples
-#' count(c(1,2,3,1)==1)
+#' count(c(1, 2, 3, 1) == 1)
 #'
 count <- function(expr) {
   # print(as.list(match.call()))
-  r<-try(eval(expr),TRUE)
-  if (inherits(r, "try-error")){
+  r <- try(eval(expr), TRUE)
+  if (inherits(r, "try-error")) {
     # it's not a correct formula ... try to do better
-    call <- as.call(list(sum,substitute(expr),na.rm = TRUE))
+    call <- as.call(list(sum, substitute(expr), na.rm = TRUE))
     env <- get_option("dataset")
-    if (is.character(env) & ! env=="") {
-      env <- eval(parse(text=env)) # epif_env$dataset
-      r <- eval(call,env,parent.frame())
+    if (is.character(env) & !env == "") {
+      env <- eval(parse(text = env)) # epif_env$dataset
+      r <- eval(call, env, parent.frame())
     }
-  } else {  # formula is correct ... dont't change anything
-    r <- sum(expr,na.rm=TRUE)
+  } else {
+    # formula is correct ... dont't change anything
+    r <- sum(expr, na.rm = TRUE)
   }
   r
   # if (is.logical(expr) ) print(TRUE)
@@ -217,13 +235,13 @@ count <- function(expr) {
 #' @importFrom foreign read.dta
 #' @importFrom utils ls.str
 #'
-right = function (text, num_char){
-  substr(text,nchar(text)-(num_char-1),nchar(text))
+right = function (text, num_char) {
+  substr(text, nchar(text) - (num_char - 1), nchar(text))
 }
 
 
-left = function (text, num_char){
-  substr(text,1,num_char)
+left = function (text, num_char) {
+  substr(text, 1, num_char)
 }
 
 mid = function(text, start_num, num_char) {
@@ -231,29 +249,34 @@ mid = function(text, start_num, num_char) {
 }
 
 # count number of specific char into a text using reg expr
-charcount <- function(pattern,stosearch) {
+charcount <- function(pattern, stosearch) {
   lengths(regmatches(stosearch, gregexpr(pattern, stosearch)))
   # length(attr(gregexpr(pattern,stosearch)[[1]],
   #            "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
 }
 
-replicate <- function(char,ntime) {
-  paste(rep(char,ntime),collapse="")
+replicate <- function(char, ntime) {
+  paste(rep(char, ntime), collapse = "")
 }
 
-lpad <- function(value,width = 11, digit = 0) {
-  r <- format(format(value,nsmall=digit),width = width ,justify="right")
-  if (is.character(value) & (nchar(r) > width )) {
-    r <- paste0(substr(r,1,width-2),"..")
+lpad <- function(value,
+                 width = 11,
+                 digit = 0) {
+  r <-
+    format(format(value, nsmall = digit),
+           width = width ,
+           justify = "right")
+  if (is.character(value) & (nchar(r) > width)) {
+    r <- paste0(substr(r, 1, width - 2), "..")
   }
   return(r)
 }
 
 file.ext <- function(text) {
-  x <- strsplit(text,"\\.")
+  x <- strsplit(text, "\\.")
   i <- length(x[[1]])
   ext <- ""
-  if (i>1) {
+  if (i > 1) {
     ext <- x[[1]][i]
   }
   ext
@@ -261,7 +284,7 @@ file.ext <- function(text) {
 
 file.name <- function(text) {
   name <- basename(text)
-  x <- strsplit(name,"\\.")
+  x <- strsplit(name, "\\.")
   x[[1]][1]
 }
 
@@ -273,6 +296,7 @@ file.name <- function(text) {
 #'
 #' @export
 #' @param filename  Name of file to be read. Type is defined by extension
+#' @param label Label to be added as attribute to dataframe
 #' @examples
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
@@ -282,52 +306,64 @@ file.name <- function(text) {
 #'
 
 
-use <- function(filename="") {
+use <- function(filename = "", label = NULL) {
   # no file ? choose one
-  if (filename=="") {
+  if (filename == "") {
     filename <- file.choose()
   }
   # try to extract name...
   s <- filename
   ext <- file.ext(filename)
   name <- file.name(filename)
-  if ( file.exists(filename)) {
+  if (file.exists(filename)) {
     # file exists.. let's go
     if (ext == "csv") {
       # look at the content
       # count and identify separator
       test <- readLines(filename , n = 2)
-      comma1 <- charcount(",",test[1])
-      semicol1 <- charcount(";",test[1])
-      comma2 <- charcount(",",test[2])
-      semicol2 <- charcount(";",test[2])
-      if (comma1 > 0 ) {
-         df <- utils::read.csv(filename)
+      comma1 <- charcount(",", test[1])
+      semicol1 <- charcount(";", test[1])
+      comma2 <- charcount(",", test[2])
+      semicol2 <- charcount(";", test[2])
+      if (comma1 > 0) {
+        df <- utils::read.csv(filename)
       }
-      if (semicol1  > 0 ) {
+      if (semicol1  > 0) {
         df <- utils::read.csv2(filename)
       }
     }
     if (ext == "dta") {
-        # foreign packages is required
-        r <- requireNamespace("foreign", quietly = TRUE)
-        if (!r) {
-          message("Package foreign required")
-        }
-        df <- foreign::read.dta(filename)
+      # foreign packages is required
+      r <- requireNamespace("foreign", quietly = TRUE)
+      if (!r) {
+        message("Package foreign required")
+      }
+      df <- foreign::read.dta(filename)
+    }
+    if (!missing(label)) {
+       attr(df,"label") <- label
     }
     fileatt <- dim(df)
-    cat("File ",filename," loaded. \n")
-    cat(fileatt[1], "Observations of ",fileatt[2]," variables. Use str(name) for details")
+    cat("File ", filename, " loaded. \n")
+    cat(fileatt[1],
+        "Observations of ",
+        fileatt[2],
+        " variables. Use str(name) for details")
     invisible(df)
   } else {
     # file doens't exists ??
-    cat("File \"",filename,"\" doesn't exist.\n", sep="")
+    cat("File \"", filename, "\" doesn't exist.\n", sep = "")
     cat("Verify your working directory. Current is", getwd())
 
   }
 }
 
+# Not sure it' usefull because specific syntax ....
+# label(test) <- "test data"
+`label<-` <- function(x,value) {
+  attr(x,"label") <- value
+  x
+}
 
 #
 #x <- NA
@@ -339,69 +375,89 @@ use <- function(filename="") {
 #}
 
 
-#'  @title clear
+#' @title clear
 #'
-#'  clear memory for beginner.
+#' @description clear memory for beginner.
 #'
 #'
 #' @export
-#' @param all  if all function are also removed from memory
+#' @param what vars, functions or all
 #'
 #'
-clear <- function(all=FALSE) {
-  arg <- as.list(match.call())
-  if ((!is.null(arg[["all"]]))  ) {
-    rm(list=ls(.GlobalEnv),envir=.GlobalEnv)
-  } else {
-    rm(list=setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv,mode="function")), envir=.GlobalEnv)
+clear <- function(what) {
+  # arg <- as.list(match.call())
+  if (missing(what)) what <- "vars"
+  swhat <- as.character(substitute(what))
+  # if op is a variable wich contain char, we use content of op
+  if (exists(swhat)) {
+    if (is.character(what)) {
+      swhat <- what
+    }
   }
+  #swhat <- parse(swhat)
+  switch (swhat,
+     "vars" = rm(list = setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv, mode = "function")), envir =.GlobalEnv),
+     "functions" = rm(list = ls.str(.GlobalEnv,mode = "function"), envir =.GlobalEnv),
+     "all" = rm(ls((.GlobalEnv))),
+     cat("Unrecognized keyword ",swhat," Use : vars, functions or all")
+  )
   result <- gc()  # garbage collector
 }
 
 #internal function to retrieve dataset variables
-getvar <- function(varname=NULL) {
+getvar <- function(varname = NULL) {
   var <- deparse(substitute(varname))
-  if ( var=="NULL" ) {
+  if (var == "NULL") {
     return(epif_env$last_var)
   }
   epif_env$last_var <- var
   # if var exists it is returned as is
   if (exists(var)) {
-    return(varname) }
+    return(varname)
+  }
   else  {
     # var doesn't exist.. may be it's a formula ?
-    r<-try(value <- varname,TRUE)
-    if (!inherits(r, "try-error")){
+    r <- try(value <- varname, TRUE)
+    if (!inherits(r, "try-error")) {
       # it's a formula ... it's evaluation is returned
       return(r)
     } else {
       # may be varname is part of a dataset ?
-      .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+      .df <-
+        names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
       ndf <- length(.df)
       j <- 1
       nfound <- 0
       dffound <- ""
-      while(j <= ndf) {
-        ifound <- grep(var,names(get(.df[j])))
-        if (length(ifound)>0) {
+      while (j <= ndf) {
+        ifound <- grep(var, names(get(.df[j])))
+        if (length(ifound) > 0) {
           dfname <- .df[j]
           nfound <- nfound + 1
           # list of dataset containing varname
-          dffound <- paste0(dffound,ifelse(dffound=="","",", "),dfname)
+          dffound <-
+            paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
         }
-        j <- j+1
+        j <- j + 1
       }
       # only one ? great
       if (nfound == 1) {
-         dfvar <- paste(dfname,"$",var ,sep="")
-         epif_env$last_var <- dfvar
-         return(eval(parse(text=dfvar)))
+        dfvar <- paste(dfname, "$", var , sep = "")
+        epif_env$last_var <- dfvar
+        return(eval(parse(text = dfvar)))
       } else {
         if (nfound > 1) {
-          warning(paste(var ,"is an ambigous name and exists in following dataset :", dffound),call.=FALSE)
+          warning(
+            paste(
+              var ,
+              "is an ambigous name and exists in following dataset :",
+              dffound
+            ),
+            call. = FALSE
+          )
           return(NULL)
         } else {
-          warning(paste(var , "is not defined"),call.=FALSE)
+          warning(paste(var , "is not defined"), call. = FALSE)
           return(NULL)
         }
       }
@@ -410,47 +466,52 @@ getvar <- function(varname=NULL) {
 }
 
 
-tab_line <- function(ncol,tot=FALSE) {
-  l1 <- replicate(LINE,FIRST+1)
-  l2 <- replicate(LINE,(ncol-1)*(COL+1))
-  l3 <- ifelse(tot,CROSS,LINE)
-  l4 <- replicate(LINE,COL+1)
-  cat(l1,CROSS,l2,l3,l4,"\n",sep ="")
+tab_line <- function(ncol, tot = FALSE) {
+  l1 <- replicate(LINE, FIRST + 1)
+  l2 <- replicate(LINE, (ncol - 1) * (COL + 1))
+  l3 <- ifelse(tot, CROSS, LINE)
+  l4 <- replicate(LINE, COL + 1)
+  cat(l1, CROSS, l2, l3, l4, "\n", sep = "")
 }
 
-tab_row <- function(rname,line,deci,tot=FALSE) {
+tab_row <- function(rname, line, deci, tot = FALSE) {
   l <- length(line)
-  cat(lpad(rname,FIRST))
-  cat("",SEP)
-  for (i in 1:(l-1)) {
-    cat(lpad(line[i],COL,digit = deci[i])," ")
+  cat(lpad(rname, FIRST))
+  cat("", SEP)
+  for (i in 1:(l - 1)) {
+    cat(lpad(line[i], COL, digit = deci[i]), " ")
   }
-  if (tot) cat(COL)
-  cat(lpad(line[l],COL,digit = deci[l]))
+  if (tot)
+    cat(COL)
+  cat(lpad(line[l], COL, digit = deci[l]))
   cat("\n")
 }
 
 
-outputtable <- function(table,deci=NULL,tot=FALSE,title="Frequency distribution",subtitle="" )  {
+outputtable <-
+  function(table,
+           deci = NULL,
+           tot = FALSE,
+           title = "Frequency distribution",
+           subtitle = "")  {
+    cat(title, "\n")
+    ncol <- dim(table)[2]
+    nline <- dim(table)[1]
+    coln <- colnames(table)
+    rown <- rownames(table)
 
-  cat(title,"\n")
-  ncol <- dim(table)[2]
-  nline <- dim(table)[1]
-  coln <- colnames(table)
-  rown <- rownames(table)
-
-  if (is.null(deci)) {
-    deci[1:nline] <- 0
+    if (is.null(deci)) {
+      deci[1:nline] <- 0
+    }
+    # Les entêtes de colonne
+    tab_row(subtitle, coln, deci, tot)
+    tab_line(ncol, tot)
+    for (i in (1:(nline - 1))) {
+      tab_row(rown[i], table[i, ], deci, tot)
+    }
+    tab_line(ncol, tot)
+    tab_row(rown[nline], table[nline, ], deci, tot)
   }
-  # Les entêtes de colonne
-  tab_row(subtitle,coln,deci,tot)
-  tab_line(ncol,tot)
-  for (i in (1:(nline-1))) {
-    tab_row(rown[i],table[i,],deci,tot)
-  }
-  tab_line(ncol,tot)
-  tab_row(rown[nline],table[nline,],deci,tot)
-}
 
 
 
@@ -459,21 +520,21 @@ getdf <- function(varname) {
   ndf <- length(.df)
   j <- 1
   nfound <- 0
-  while(j <= ndf) {
-    ifound <- grep(varname,names(get(.df[j])))
-    if (length(ifound)>0) {
+  while (j <= ndf) {
+    ifound <- grep(varname, names(get(.df[j])))
+    if (length(ifound) > 0) {
       dfname <- .df[j]
       nfound <- nfound + 1
     }
     # cat(.df[j]," ",ifound," ",nfound," ",dfname)
-    j <- j+1
+    j <- j + 1
   }
   if (nfound == 1) {
-    dfvar <- paste(dfname,"$",varname ,sep="")
-    return(eval(parse(text=dfvar)))
+    dfvar <- paste(dfname, "$", varname , sep = "")
+    return(eval(parse(text = dfvar)))
   } else {
     if (nfound > 1) {
-      cat(varname ," is ambigous")
+      cat(varname , " is ambigous")
     } else {
       cat(varname , "is not defined")
     }
@@ -481,9 +542,7 @@ getdf <- function(varname) {
 }
 
 
-rename <- function(oldname,newname) {
-
+rename <- function(oldname, newname) {
   names(data) <- sub(oldname, newname, names(data))
 
 }
-
