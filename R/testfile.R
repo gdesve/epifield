@@ -5,7 +5,7 @@ tempf <- function(all="",b=2) {
   print("match.call....")
   r <- as.list(match.call())
 
-  str(r)
+  #str(r)
   if (!is.null(r[["all"]])) {
      print("ALL")
   } else print("NOTALL")
