@@ -288,6 +288,20 @@ file.name <- function(text) {
   x[[1]][1]
 }
 
+ask <- function(message,answers) {
+  r <- ""
+  while(r=="" ){
+    n <- readline(message)
+    if(!is.na(match(n,as.vector(answers)))) {
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
+    break
+  }
+}
+
+
 #'  use
 #'
 #'  read a data.frame.
@@ -309,7 +323,11 @@ file.name <- function(text) {
 use <- function(filename = "", label = NULL) {
   # no file ? choose one
   if (filename == "") {
-    filename <- file.choose()
+    r <- try(filename <- file.choose())
+    if (inherits(r, "try-error")) {
+      # user have cancelled , stop now
+      return(r)
+    }
   }
   # try to extract name...
   s <- filename
@@ -327,29 +345,38 @@ use <- function(filename = "", label = NULL) {
       semicol2 <- charcount(";", test[2])
       if (comma1 > 0) {
         df <- utils::read.csv(filename)
-      }
-      if (semicol1  > 0) {
+      } else if (semicol1  > 0) {
         df <- utils::read.csv2(filename)
       }
-    }
-    if (ext == "dta") {
+    } else  if (ext == "dta") {
       # foreign packages is required
       r <- requireNamespace("foreign", quietly = TRUE)
       if (!r) {
         message("Package foreign required")
       }
       df <- foreign::read.dta(filename)
+    } else if (ext == "rec") {
+      # foreign packages is required
+      r <- requireNamespace("foreign", quietly = TRUE)
+      if (!r) {
+        message("Package foreign required")
+      }
+      df <- foreign::read.epiinfo(filename)
+    } else {
+      cat("Extension '", ext, "'not found")
     }
     if (!missing(label)) {
-       attr(df,"label") <- label
+      attr(df, "label") <- label
     }
-    fileatt <- dim(df)
-    cat("File ", filename, " loaded. \n")
-    cat(fileatt[1],
-        "Observations of ",
-        fileatt[2],
-        " variables. Use str(name) for details")
-    invisible(df)
+    if (is.data.frame(df)) {
+      fileatt <- dim(df)
+      cat("File ", filename, " loaded. \n")
+      cat(fileatt[1],
+          "Observations of ",
+          fileatt[2],
+          " variables. Use str(name) for details")
+      invisible(df)
+    }
   } else {
     # file doens't exists ??
     cat("File \"", filename, "\" doesn't exist.\n", sep = "")
@@ -382,11 +409,14 @@ use <- function(filename = "", label = NULL) {
 #'
 #' @export
 #' @param what vars, functions or all
+#' @param noask to clear whithout confirmation. Useful when running from a script
 #'
 #'
-clear <- function(what) {
+# data should be added by lokking at data.frame into vars list
+clear <- function(what, noask = FALSE) {
   # arg <- as.list(match.call())
-  if (missing(what)) what <- "vars"
+  if (missing(what))
+    what <- "vars"
   swhat <- as.character(substitute(what))
   # if op is a variable wich contain char, we use content of op
   if (exists(swhat)) {
@@ -395,12 +425,27 @@ clear <- function(what) {
     }
   }
   #swhat <- parse(swhat)
-  switch (swhat,
-     "vars" = rm(list = setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv, mode = "function")), envir =.GlobalEnv),
-     "functions" = rm(list = ls.str(.GlobalEnv,mode = "function"), envir =.GlobalEnv),
-     "all" = rm(ls((.GlobalEnv))),
-     cat("Unrecognized keyword ",swhat," Use : vars, functions or all")
+  switch (
+    swhat,
+    "vars" = { li = setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv, mode = "function")) } ,
+    "functions" = { li = ls.str(.GlobalEnv, mode = "function") },
+    "all" =  { li = ls((.GlobalEnv)) },
+    {
+      li <- ls(.GlobalEnv, pattern = swhat)
+    }
   )
+  l <- length(li)
+  if (l > 0) {
+    cat(l, " objets to remove :", as.character(li))
+    if (noask || ask("Are you ok ?", c("Yes", "Y", "y"))) {
+      rm(list = li, envir = .GlobalEnv)
+    }
+  } else {
+    cat("Unrecognized keyword ",
+        swhat,
+        " Use : vars, functions  all or pattern")
+  }
+
   result <- gc()  # garbage collector
 }
 
@@ -411,17 +456,27 @@ getvar <- function(varname = NULL) {
     return(epif_env$last_var)
   }
   epif_env$last_var <- var
-  # if var exists it is returned as is
+  subst <- FALSE
+  # if var is char content is used
   if (exists(var)) {
+     if (is.character(varname) & length(varname)== 1 ) {
+        var<-eval(varname)
+        subst<-TRUE
+     }
+  }
+  #cat(var," / ",varname, exists(var))
+  if  (exists(var) ) {
+    # if var exists it is returned as is
     return(varname)
   }
-  else  {
+  if (! exists(var) ) {
     # var doesn't exist.. may be it's a formula ?
     r <- try(value <- varname, TRUE)
-    if (!inherits(r, "try-error")) {
+    if ( !inherits(r, "try-error")) {
       # it's a formula ... it's evaluation is returned
       return(r)
-    } else {
+    }
+    else {
       # may be varname is part of a dataset ?
       .df <-
         names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
