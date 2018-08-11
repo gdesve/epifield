@@ -92,11 +92,6 @@ adddf <- function(explist) {
 }
 
 
-test2 <- function() {
-   print(sys.calls())
-   3
-}
-
 tabular <- function(df) {
   stopifnot(is.data.frame(df))
 

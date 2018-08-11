@@ -21,15 +21,26 @@ test_that("File ext found in path", {
   expect_equal(file.ext("users/test/data.tira.dta"),"dta")
 })
 
+test_that("File dta load ", {
+  gastro5 <- use("../../inst/extdata/gastro5.dta")
+  expect_equal(is.data.frame(gastro5),TRUE)
+  expect_equal(exists("gastro5"),TRUE)
+})
+
 
 test_that("right of text correct", {
   expect_equal(right("dummy_test",4),"test")
 })
 
 
-test_that("Clear memory", {
+test_that("Clear memory must ask", {
   assign("global.test",5,envir = .GlobalEnv)
+  clear("global.test")
   expect_equal(exists("global.test"), TRUE)
-  clear()
+})
+
+test_that("Clear memory ok if no ask", {
+  assign("global.test",5,envir = .GlobalEnv)
+  clear("global.test",noask=TRUE)
   expect_equal(exists("global.test"), FALSE)
 })
