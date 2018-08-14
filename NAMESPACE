@@ -2,6 +2,7 @@
 
 export(clear)
 export(count)
+export(epitable)
 export(freq)
 export(get_option)
 export(list_option)

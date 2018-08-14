@@ -451,9 +451,9 @@ clear <- function(what, noask = FALSE) {
 
 #internal function to retrieve dataset variables
 getvar <- function(varname = NULL) {
-  var <- deparse(substitute(varname))
-  if (var == "NULL") {
-    return(epif_env$last_var)
+  var <- varname # deparse(substitute(varname))
+  if (missing(varname)) {
+    return(get_option("last_var"))
   }
   epif_env$last_var <- var
   subst <- FALSE
@@ -471,10 +471,12 @@ getvar <- function(varname = NULL) {
   }
   if (! exists(var) ) {
     # var doesn't exist.. may be it's a formula ?
-    r <- try(value <- varname, TRUE)
-    if ( !inherits(r, "try-error")) {
-      # it's a formula ... it's evaluation is returned
-      return(r)
+    if ( is.language(var) ) {
+      r <- try(value <- varname, TRUE)
+      if ( !inherits(r, "try-error")) {
+        # it's a formula ... it's evaluation is returned
+        return(r)
+      }
     }
     else {
       # may be varname is part of a dataset ?

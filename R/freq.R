@@ -17,14 +17,13 @@
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
 #' freq(c(3,1,2,2,5))
-#' \dontrun{
-#' freq(c(3,1,2,2,5))
-#' }
 #'
 #'
 
 freq <- function(...) {
-  var <- getvar(...)
+  arg <- deparse(substitute(...))
+
+  var <- getvar(arg)
   if (! is.null(var)) {
     count <- table(var, useNA="no")
     tot <- length(var)
@@ -48,4 +47,36 @@ freq <- function(...) {
 }
 
 
+# epifield documentation for RData using roxygen2
+#' @title
+#' Cross tabulation ( 2by2 table).
+#' @description
+#' \code{epitable} Display a cross tabulation of two binary variables optionnaly with
+#'  row or col percentages.
+#'
+#'
+#' @name epitable
+#'
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality,
+#' available at \url{https://github.com/}.
+#'
+#' @seealso \code{\link{freq}} for frequency distributions
+#' @export
+#' @param exp  "Exposure" as numbers, factors or text.
+#' @param out  "Outcome" as numbers, factors or text
+#' @return An array containing  values of \code{...}   \code{}
+#' @examples
+#' \dontrun{
+#' epitable(c(3,1,2,2,5))
+#' }
+#'
+#'
+epitable <- function(exp,out)  {
 
+   expdata <- getvar(deparse(exp))
+   outdata <- getvar(out)
+   r <- table(expdata,outdata)
+   m <- 1
+
+}
