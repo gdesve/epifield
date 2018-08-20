@@ -96,7 +96,7 @@ get_option <- function(op) {
   if (match(s_op, ls(envir = epif_env), nomatch = 0)) {
     eval(parse(text = paste0("epif_env$", s_op)))
   } else {
-    warning("Option unavailable")
+    # warning("Option unavailable")
     r <- ""
   }
 }
@@ -179,7 +179,22 @@ setdata <- function(df = NULL) {
   # pour finir verifier que df fait bien partie de l'environnement
 }
 
+getdata <- function() {
 
+  df <- get_option("dataset")  # epif_env$dataset
+
+  if ( is.character(df) ) {
+    if (! df == "") {
+      # dataset contain name ... then get the data.frame
+      df <- eval(parse(text = df))
+    }
+  }
+  # we verify that we finally have a dataframe
+  if ( ! is.data.frame(df)) {
+    df <- NULL
+  }
+  df
+}
 
 
 #' Title count
@@ -196,31 +211,55 @@ setdata <- function(df = NULL) {
 #'
 count <- function(expr) {
   # print(as.list(match.call()))
+  m <- NA
+  if (missing(expr)) {
+    expr <- getdata()  # epif_env$dataset
+  }
   r <- try(eval(expr), TRUE)
   if (inherits(r, "try-error")) {
-    # it's not a correct formula ... try to do better
+    # it's not a correct formula ... we store the error
+    m <- r[[1]]
+    r <- NA
+    # and try to do better by evaluating in the context of current dataset
     call <- as.call(list(sum, substitute(expr), na.rm = TRUE))
-    env <- get_option("dataset")  # epif_env$dataset
-    if ( is.character(env) ) {
-       if (! env == "") {
-          # dataset contain name ... then get the data.frame
-          env <- eval(parse(text = env))
-       }
-    }
-    # we verify that we finally have a dataframe
+    env <- getdata()  # epif_env$dataset
     if (is.data.frame(env)) {
-      # we evaluate the "sum" in thatenvironnement
+      # we evaluate the "sum" in that environnement
+      m <- NA
       r <- try(eval(call, env, parent.frame()) , TRUE)
+      if (inherits(r, "try-error")) {
+        # still an error we report them
+        m <- r[[1]]
+        r <- NA
+      }
     }
   } else {
-    # formula is correct ... dont't change anything
-    r <- sum(expr, na.rm = TRUE)
+    # formula is correct, is it a data frame ?
+    if (is.data.frame(expr)) {
+      # we return number of row
+      r <- dim.data.frame(expr)[[1]]
+    } else {
+      # ... dont't change anything
+      r <- sum(expr, na.rm = TRUE)
+    }
+  }
+  if (!is.na(m)) {
+    red("Error :")
+    pos <- regexpr("object '(\\w+)' not found", m )[1]
+    normal(substring(m, pos ))
+    cat("Considere to set the default data.frame using ")
+    bold("setdata(dataname)")
+    normal("\n")
   }
   r
   # if (is.logical(expr) ) print(TRUE)
 }
 
-# Another possibility would be to complete expr with getdf / setdata
+# Another possibility would be to complete expr with getdf automatically by looking for object
+# avec un regexpr type
+#  r <- regexpr("object '(\\w+)' not found", r[1],perl=TRUE)
+#  p <- r[1]
+#  l <- r[2]
 # r<-try(eval(sum(heu == 2)))
 # r[1] : Error in eval(sum(heu == 2)) : objet 'heu' introuvable
 # substr(expr , heu ) <-  tira$heu
@@ -261,6 +300,11 @@ charcount <- function(pattern, stosearch) {
   lengths(regmatches(stosearch, gregexpr(pattern, stosearch)))
   # length(attr(gregexpr(pattern,stosearch)[[1]],
   #            "match.length")[attr(gregexpr(pattern,stosearch)[[1]], "match.length")>0])
+}
+
+pos <- function(pattern, stosearch) {
+    r <- regexpr(pattern, stosearch)
+    r <- ifelse(r < 0,0,r)
 }
 
 replicate <- function(char, ntime) {
@@ -446,7 +490,7 @@ add.sep <- function(li,c) {
 #'
 #' @description
 #' Clear can be used to remove objects from memory (variables, data.frame, functions).
-#' Clear is easier than \code{\link{rm()}} and is more secure because, by default, it ask for confirmation.
+#' Clear is easier than \code{\link{rm}} and is more secure because, by default, it ask for confirmation.
 #' Objects to remove can be specified as is or by their name ("character").
 #' It's possible to erase all vars, all functions using keywords : "vars" or "functions"
 #' "all" keyword will allows total cleaning.

@@ -13,7 +13,7 @@ clear(what, noask = FALSE)
 }
 \description{
 Clear can be used to remove objects from memory (variables, data.frame, functions).
-Clear is easier than \code{\link{rm()}} and is more secure because, by default, it ask for confirmation.
+Clear is easier than \code{\link{rm}} and is more secure because, by default, it ask for confirmation.
 Objects to remove can be specified as is or by their name ("character").
 It's possible to erase all vars, all functions using keywords : "vars" or "functions"
 "all" keyword will allows total cleaning.
