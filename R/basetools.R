@@ -301,6 +301,29 @@ ask <- function(message,answers) {
   }
 }
 
+ok <- function() {
+  ask("Are you ok ?", c("Yes", "Y", "y") )
+}
+
+bold <- function(tx) {
+  cat("\033[1m",tx,sep="")
+}
+
+italic <- function(tx) {
+  cat("\033[3m",tx,sep="")
+}
+
+red <- function(tx) {
+  cat("\033[31m",tx,sep="")
+}
+
+normal <- function(tx) {
+  cat("\033[0m",tx,sep="")
+}
+
+
+
+
 
 #'  use
 #'
@@ -401,53 +424,89 @@ use <- function(filename = "", label = NULL) {
 #  ...
 #}
 
+add.sep <- function(li,c) {
+  sep <- function(x)  paste(x, c)
+  li2 <- lapply(li,sep)
+  l <- length(li)
+  li2[l] <- li[l]
+  li2
+}
 
-#' @title clear
+
+#' @title Remove variables, dataset or functions from memory
 #'
-#' @description clear memory for beginner.
-#'
+#' @description
+#' Clear can be used to remove objects from memory (variables, data.frame, functions).
+#' Clear is easier than \code{\link{rm()}} and is more secure because, by default, it ask for confirmation.
+#' Objects to remove can be specified as is or by their name ("character").
+#' It's possible to erase all vars, all functions using keywords : "vars" or "functions"
+#' "all" keyword will allows total cleaning.
+#' @details
+#' When keyword or pattern are used and there is more than one object to clear, a confirmation will be issued.
+#' Except if noask parameters is set to true
 #'
 #' @export
-#' @param what vars, functions or all
+#' @param what Keyword (vars, functions, all) or pattern
 #' @param noask to clear whithout confirmation. Useful when running from a script
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality, available at \url{https://github.com/}.
+#' @seealso \code{\link{rm}}
+#' @examples
+#' tmp <- 5
+#' temp <- 5
+#' clear(t)
 #'
-#'
-# data should be added by lokking at data.frame into vars list
 clear <- function(what, noask = FALSE) {
   # arg <- as.list(match.call())
-  if (missing(what))
-    what <- "vars"
+  continue <- TRUE
+  if ( missing(what) ) what <- "vars"
   swhat <- as.character(substitute(what))
+  if ( length(swhat) > 1 ) {
+    swhat <- paste0(swhat[2],swhat[1],swhat[3])
+  }
+  if ( sum(grep("\\$",swhat) ) > 0 ) {
+    cat("To clear a data.frame variable like ")
+    italic(swhat)
+    normal("  Use drop function")
+    continue <- FALSE
+  }
   # if op is a variable wich contain char, we use content of op
-  if (exists(swhat)) {
-    if (is.character(what)) {
+  if (continue & exists(swhat)) {
+    if (is.character(what) & length(what)==1) {
       swhat <- what
     }
   }
   #swhat <- parse(swhat)
-  switch (
-    swhat,
-    "vars" = { li = setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv, mode = "function")) } ,
-    "functions" = { li = ls.str(.GlobalEnv, mode = "function") },
-    "all" =  { li = ls((.GlobalEnv)) },
-    {
-      li <- ls(.GlobalEnv, pattern = swhat)
+  if ( continue ) {
+    switch (
+      swhat,
+      "vars" = { li = setdiff(ls(.GlobalEnv), ls.str(.GlobalEnv, mode = "function")) } ,
+      "functions" = { li = ls.str(.GlobalEnv, mode = "function") },
+      "all" =  { li = ls((.GlobalEnv)) },
+      {
+        li <- ls(.GlobalEnv, pattern = swhat)
+      }
+    )
+    l <- length(li)
+    if (l > 0) {
+      lid <- add.sep(li,"- ")
+      cat(l, " objet(s) to remove :")
+      italic(as.character(lid))
+      if (l == 1 ||  noask || ok()  ) {
+        rm(list = li, envir = .GlobalEnv)
+      }
+    } else {
+      cat("No such objets :'")
+      italic(swhat)
+      normal("'. Use keywords:")
+      bold("vars, functions, all")
+      normal(" or a pattern (see help)")
     }
-  )
-  l <- length(li)
-  if (l > 0) {
-    cat(l, " objets to remove :", as.character(li))
-    if (noask || ask("Are you ok ?", c("Yes", "Y", "y"))) {
-      rm(list = li, envir = .GlobalEnv)
-    }
-  } else {
-    cat("Unrecognized keyword ",
-        swhat,
-        " Use : vars, functions  all or pattern")
   }
 
   result <- gc()  # garbage collector
 }
+
 
 #internal function to retrieve dataset variables
 getvar <- function(varname = NULL) {

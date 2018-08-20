@@ -32,15 +32,3 @@ test_that("right of text correct", {
   expect_equal(right("dummy_test",4),"test")
 })
 
-
-test_that("Clear memory must ask", {
-  assign("global.test",5,envir = .GlobalEnv)
-  clear("global.test")
-  expect_equal(exists("global.test"), TRUE)
-})
-
-test_that("Clear memory ok if no ask", {
-  assign("global.test",5,envir = .GlobalEnv)
-  clear("global.test",noask=TRUE)
-  expect_equal(exists("global.test"), FALSE)
-})
