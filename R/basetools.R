@@ -97,6 +97,7 @@ get_option <- function(op) {
     eval(parse(text = paste0("epif_env$", s_op)))
   } else {
     warning("Option unavailable")
+    r <- ""
   }
 }
 
@@ -163,7 +164,7 @@ setdata <- function(df = NULL) {
     # tester si le dataset est bien nommé et n'a pas été construit en direct
     e <- as.character(substitute(df))
     if (sum(match(ls.str(.GlobalEnv, mode = "list"), e), na.rm = TRUE) > 0) {
-      set_option("dataset", substitute(df))
+      set_option("dataset", as.character(substitute(df)) )
     } else {
       stop("erreur dataset name is incorrect")
     }
@@ -199,10 +200,17 @@ count <- function(expr) {
   if (inherits(r, "try-error")) {
     # it's not a correct formula ... try to do better
     call <- as.call(list(sum, substitute(expr), na.rm = TRUE))
-    env <- get_option("dataset")
-    if (is.character(env) & !env == "") {
-      env <- eval(parse(text = env)) # epif_env$dataset
-      r <- eval(call, env, parent.frame())
+    env <- get_option("dataset")  # epif_env$dataset
+    if ( is.character(env) ) {
+       if (! env == "") {
+          # dataset contain name ... then get the data.frame
+          env <- eval(parse(text = env))
+       }
+    }
+    # we verify that we finally have a dataframe
+    if (is.data.frame(env)) {
+      # we evaluate the "sum" in thatenvironnement
+      r <- try(eval(call, env, parent.frame()) , TRUE)
     }
   } else {
     # formula is correct ... dont't change anything
