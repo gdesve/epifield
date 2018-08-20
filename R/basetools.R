@@ -301,6 +301,7 @@ ask <- function(message,answers) {
   }
 }
 
+
 ok <- function() {
   ask("Are you ok ?", c("Yes", "Y", "y") )
 }
@@ -456,6 +457,12 @@ add.sep <- function(li,c) {
 #' temp <- 5
 #' clear(t)
 #'
+<<<<<<< HEAD
+=======
+#'
+# data should be added by lokking at data.frame into vars list
+# currently tira$ill rise an error
+>>>>>>> 98a23cef6ab0c54f5d1f806e77b60862de7c1fba
 clear <- function(what, noask = FALSE) {
   # arg <- as.list(match.call())
   continue <- TRUE
@@ -493,6 +500,7 @@ clear <- function(what, noask = FALSE) {
       cat(l, " objet(s) to remove :")
       italic(as.character(lid))
       if (l == 1 ||  noask || ok()  ) {
+      if (noask || ask("Are you ok ?", c("Yes", "Y", "y"))) {
         rm(list = li, envir = .GlobalEnv)
       }
     } else {
