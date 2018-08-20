@@ -1,0 +1,5 @@
+^inst/extdata$
+^inst/docs$
+^testfile\.R$
+^.*\.Rproj$
+^\.Rproj\.user$
