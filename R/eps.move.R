@@ -1,18 +1,18 @@
 #' Move a column of a data.frame to another position
 #'
-#' @param data data.frame to be modified 
+#' @param data data.frame to be modified
 #' @param tomove character - the column to be moved
 #' @param where character - in c("first", "last", "before", "after")
 #' @param target - character - column when where is "after" or "before"
 #'
 #' @return data.frame
-#' @export 
+#' @export
 #'
 #' @examples
 #' library(EpiStats)
 #' data(Tiramisu)
-#' Tiramisu <- eps.move(Tiramisu, "uniquekey", "after", "dateonset")
-eps.move <- function(data, tomove, where = "last", target = NULL) {
+#' Tiramisu <- move(Tiramisu, "uniquekey", "after", "dateonset")
+move <- function(data, tomove, where = "last", target = NULL) {
   tomove <- as.character(substitute(tomove))
   target <- as.character(substitute(target))
   temp <- setdiff(names(data), tomove)
