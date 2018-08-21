@@ -9,9 +9,8 @@
 #' @export
 #'
 #' @examples
-#' library(EpiStats)
-#' data(Tiramisu)
-#' Tiramisu <- move(Tiramisu, "uniquekey", "after", "dateonset")
+#' data(tira)
+#' tira <- move(tira, "uniquekey", "after", "dateonset")
 move <- function(data, tomove, where = "last", target = NULL) {
   tomove <- as.character(substitute(tomove))
   target <- as.character(substitute(target))
@@ -29,10 +28,4 @@ move <- function(data, tomove, where = "last", target = NULL) {
   x
 }
 
-# Test de la fonction
-# library(EpiStats)
-# data(Tiramisu)
-# str(Tiramisu)
-# Tiramisu <- eps.move(Tiramisu, "uniquekey", "after", "dateonset")
-# str(Tiramisu)
 
