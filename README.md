@@ -22,7 +22,8 @@ Missing data: The equivalent of misschk in Stata (but without the patterns table
 
 Label values (for non-binary variables or non obvious order binary variables, e.g. male/female)
 
-rename
+- rename 
+  Syntax: rename( data, colnames, newname)
 
 logreg  logistic regression
 
