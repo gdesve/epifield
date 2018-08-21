@@ -524,12 +524,13 @@ clear <- function(what, noask = FALSE) {
     normal("  Use drop function")
     continue <- FALSE
   }
-  # if op is a variable wich contain char, we use content of op
-  if (continue & exists(swhat)) {
-    if (is.character(what) & length(what)==1) {
-      swhat <- what
-    }
-  }
+  # if expr is a variable wich contain char, we can use content of expr ?
+  # if (continue & exists(swhat,.GlobalEnv, inherits = FALSE)) {
+  #   if (is.character(what) & length(what)==1) {
+  #     twhat <- what
+  #     swhat <- ifelse(exists(twhat,.GlobalEnv, inherits = FALSE),what,swhat)
+  #   }
+  # }
   #swhat <- parse(swhat)
   if ( continue ) {
     switch (
@@ -538,7 +539,12 @@ clear <- function(what, noask = FALSE) {
       "functions" = { li = ls.str(.GlobalEnv, mode = "function") },
       "all" =  { li = ls((.GlobalEnv)) },
       {
-        li <- ls(.GlobalEnv, pattern = swhat)
+        # there is an objects with that name... we remove it
+        if ( exists(swhat) ) {
+          li <- c(swhat)
+        } else {
+           li <- ls(.GlobalEnv, pattern = swhat)
+        }
       }
     )
     l <- length(li)
@@ -546,17 +552,16 @@ clear <- function(what, noask = FALSE) {
       lid <- add.sep(li,"- ")
       cat(l, " objet(s) to remove :")
       italic(as.character(lid))
-      if (l == 1 ||  noask || ok()  ) {
-        if (noask || ask("Are you ok ?", c("Yes", "Y", "y"))) {
+      normal("\n")
+      if ( ( l == 1 & exists(li[1]) ) ||  noask || ok() ) {
           rm(list = li, envir = .GlobalEnv)
-        }
-      } else {
+      }
+    } else {
         cat("No such objets :'")
         italic(swhat)
         normal("'. Use keywords:")
         bold("vars, functions, all")
         normal(" or a pattern (see help)")
-      }
     }
     result <- gc()  # garbage collector
   }
@@ -572,27 +577,27 @@ getvar <- function(varname = NULL) {
   epif_env$last_var <- var
   subst <- FALSE
   # if var is char content is used
-  if (exists(var)) {
-     if (is.character(varname) & length(varname)== 1 ) {
-        var<-eval(varname)
-        subst<-TRUE
-     }
-  }
+  # if (exists(var)) {
+  #   if (is.character(varname) & length(varname)== 1 ) {
+  #      var<-eval(varname)
+  #      subst<-TRUE
+  #   }
+  # }
   #cat(var," / ",varname, exists(var))
-  if  (exists(var) ) {
+  ex <- parse(text=var)
+  if (exists(var)) {
     # if var exists it is returned as is
-    return(varname)
+    return(eval(ex))
   }
-  if (! exists(var) ) {
+  if (!exists(var)) {
     # var doesn't exist.. may be it's a formula ?
-    if ( is.language(var) ) {
-      r <- try(value <- varname, TRUE)
-      if ( !inherits(r, "try-error")) {
-        # it's a formula ... it's evaluation is returned
-        return(r)
-      }
-    }
-    else {
+    # if ( is.language(var) ) {
+    # r <- try(value <- varname, TRUE)
+    r <- try(eval(ex), TRUE)
+    if (!inherits(r, "try-error")) {
+      # it's a formula ... it's evaluation is returned
+      return(r)
+    } else {
       # may be varname is part of a dataset ?
       .df <-
         names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
@@ -631,9 +636,9 @@ getvar <- function(varname = NULL) {
           warning(paste(var , "is not defined"), call. = FALSE)
           return(NULL)
         }
-      }
-    }
-  }
+      } # 0 or more than 1
+    } # it's not a formula
+  } # var not exists
 }
 
 

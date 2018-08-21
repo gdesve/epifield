@@ -1,0 +1,199 @@
+LABELBLOCK
+  LABEL sexlbl
+    0  female
+    1  male
+  END
+  LABEL tiralbl
+    0  no
+    1  yes
+  END
+  LABEL tportionlbl
+    0  None
+    1  "One portion"
+    2  "Two portions"
+    3  "Three portions"
+  END
+  LABEL wmousselbl
+    0  no
+    1  yes
+  END
+  LABEL dmousselbl
+    0  no
+    1  yes
+  END
+  LABEL mousselbl
+    0  no
+    1  yes
+  END
+  LABEL mportionlbl
+    0  None
+    1  "One portion"
+    2  "Two portions"
+    3  "Three portions"
+  END
+  LABEL beerlbl
+    0  no
+    1  yes
+  END
+  LABEL redjellylbl
+    0  no
+    1  yes
+  END
+  LABEL fruitsaladlbl
+    0  no
+    1  yes
+  END
+  LABEL tomatolbl
+    0  no
+    1  yes
+  END
+  LABEL mincelbl
+    0  no
+    1  yes
+  END
+  LABEL salmonlbl
+    0  no
+    1  yes
+  END
+  LABEL horseradislbl
+    0  no
+    1  yes
+  END
+  LABEL chickenwinlbl
+    0  no
+    1  yes
+  END
+  LABEL roastbeeflbl
+    0  no
+    1  yes
+  END
+  LABEL porklbl
+    0  no
+    1  yes
+  END
+  LABEL headachelbl
+    0  no
+    1  yes
+  END
+  LABEL nausealbl
+    0  no
+    1  yes
+  END
+  LABEL vomitinglbl
+    0  no
+    1  yes
+  END
+  LABEL abdolbl
+    0  no
+    1  yes
+  END
+  LABEL diarrhoealbl
+    0  no
+    1  yes
+  END
+  LABEL feverlbl
+    0  no
+    1  yes
+  END
+  LABEL agegrouplbl
+    0  0-29
+    1  30-80
+  END
+END
+
+SEX
+  COMMENT LEGAL USE sexlbl
+END
+
+TIRA
+  COMMENT LEGAL USE tiralbl
+END
+
+TPORTION
+  COMMENT LEGAL USE tportionlbl
+END
+
+WMOUSSE
+  COMMENT LEGAL USE wmousselbl
+END
+
+DMOUSSE
+  COMMENT LEGAL USE dmousselbl
+END
+
+MOUSSE
+  COMMENT LEGAL USE mousselbl
+END
+
+MPORTION
+  COMMENT LEGAL USE mportionlbl
+END
+
+BEER
+  COMMENT LEGAL USE beerlbl
+END
+
+REDJELLY
+  COMMENT LEGAL USE redjellylbl
+END
+
+FRUITSALAD
+  COMMENT LEGAL USE fruitsaladlbl
+END
+
+TOMATO
+  COMMENT LEGAL USE tomatolbl
+END
+
+MINCE
+  COMMENT LEGAL USE mincelbl
+END
+
+SALMON
+  COMMENT LEGAL USE salmonlbl
+END
+
+HORSERADIS
+  COMMENT LEGAL USE horseradislbl
+END
+
+CHICKENWIN
+  COMMENT LEGAL USE chickenwinlbl
+END
+
+ROASTBEEF
+  COMMENT LEGAL USE roastbeeflbl
+END
+
+PORK
+  COMMENT LEGAL USE porklbl
+END
+
+HEADACHE
+  COMMENT LEGAL USE headachelbl
+END
+
+NAUSEA
+  COMMENT LEGAL USE nausealbl
+END
+
+VOMITING
+  COMMENT LEGAL USE vomitinglbl
+END
+
+ABDO
+  COMMENT LEGAL USE abdolbl
+END
+
+DIARRHOEA
+  COMMENT LEGAL USE diarrhoealbl
+END
+
+FEVER
+  COMMENT LEGAL USE feverlbl
+END
+
+agegroup
+  COMMENT LEGAL USE agegrouplbl
+END
+
