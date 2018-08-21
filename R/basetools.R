@@ -244,6 +244,7 @@ count <- function(expr) {
     }
   }
   if (!is.na(m)) {
+    # should look for different error ... (not found ) / ( $ operator is invalid : "" are missing)
     red("Error :")
     pos <- regexpr("object '(\\w+)' not found", m )[1]
     normal(substring(m, pos ))
