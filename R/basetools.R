@@ -553,7 +553,7 @@ clear <- function(what, noask = FALSE) {
       cat(l, " objet(s) to remove :")
       italic(as.character(lid))
       normal("\n")
-      if ( ( l == 1 & exists(li[1]) ) ||  noask || ok() ) {
+      if ( ( l == 1 & li[1]==swhat ) ||  noask || ok() ) {
           rm(list = li, envir = .GlobalEnv)
       }
     } else {
