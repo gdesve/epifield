@@ -379,7 +379,7 @@ normal <- function(tx) {
 
 
 
-#'  use
+#'  read
 #'
 #'  read a data.frame.
 #'  The function try to identify the file structure in order to call the appropriate specific
@@ -392,12 +392,12 @@ normal <- function(tx) {
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
 #' sep = "\n")
-#' readLines(fil, n = -1)
+#' df <- read(filename=fil)
 #' unlink(fil) # tidy up
 #'
 
 
-use <- function(filename = "", label = NULL) {
+read <- function(filename = "", label = NULL) {
   # no file ? choose one
   if (filename == "") {
     r <- try(filename <- file.choose())
