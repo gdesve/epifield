@@ -197,9 +197,9 @@ getdata <- function() {
 }
 
 
-#' Title count
+#' @title  count number of record / row
 #'
-#' count number of record / row corresponding to expr
+#' @description Toyal return the number of row sastifying a condition.
 #'
 #' @param expr A logical expression
 #'
@@ -207,9 +207,9 @@ getdata <- function() {
 #' @export
 #'
 #' @examples
-#' count(c(1, 2, 3, 1) == 1)
+#' total(c(1, 2, 3, 1) == 1)
 #'
-count <- function(expr) {
+total <- function(expr) {
   # print(as.list(match.call()))
   m <- NA
   if (missing(expr)) {
@@ -356,7 +356,7 @@ ask <- function(message,answers) {
 
 
 ok <- function() {
-  ask("Are you ok ?", c("Yes", "Y", "y") )
+  ask("Do you confirm?", c("Yes", "Y", "y") )
 }
 
 bold <- function(tx) {
