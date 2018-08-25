@@ -571,6 +571,7 @@ clear <- function(what, noask = FALSE) {
 #internal function to retrieve dataset variables
 getvar <- function(varname = NULL) {
   var <- varname # deparse(substitute(varname))
+  m <- mode(var)
   if (missing(varname)) {
     return(get_option("last_var"))
   }

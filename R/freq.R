@@ -21,7 +21,7 @@
 #'
 
 freq <- function(...) {
-  arg <- deparse(substitute(...))
+  arg <- substitute(...)
 
   var <- getvar(arg)
   if (! is.null(var)) {
@@ -35,7 +35,7 @@ freq <- function(...) {
     mis  <- sum(is.na(var))
     vname <- getvar()
     colnames(result) <- c("Freq", "%" , "cum%")
-    result <- rbind(result,Totals = colSums(result))
+    result <- rbind(result,Total = colSums(result))
     deci <- c(0,2,2)
     result[nrow(result),ncol(result)] <- 100
     title <- paste("Frequency distribution of ")
