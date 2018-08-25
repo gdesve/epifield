@@ -1,26 +1,27 @@
 # testfile ignored by BUILD for testing function
 
-tempf <- function(all="",b=2) {
-  d <- 5
+tempf <- function(arg1="essai",arg2,arg3, arg4,...) {
   print("match.call....")
   r <- as.list(match.call())
+  print(r)
 
-  #str(r)
-  if (!is.null(r[["all"]])) {
-     print("ALL")
-  } else print("NOTALL")
+  print("--------------------")
 
-#  cat("Currently set values defined in call or formals\n")
-#  print(allargs())
-#  cat("Values as defined at the time of the call\n")
-#  print(allargs(T))
+  if (!is.null(r[["arg1"]])) {
+     cat( "arg1 given :")
+     aschar <- as.character(substitute(r[["arg1"]]))
+     print(r[["arg1"]])
+     print(aschar)
+  } else print("No arg1")
+  l <- length(r)
+  print("Mode")
+  if (l>1) {
+    for ( i in 2:l ) {
+      cat("arg",i," : (",as.character(r[[i]]),"): ", mode(r[[i]]), "\n")
+    }
+  }
 }
 
-
-fff = function(x, ...) {
-  args = as.list(match.call()) # contains a=1, b=2
-  print(unlist(args))
-}
 
 #internal function to retrieve dataset variables
 # use of lapply could be more efficient than loop ?
