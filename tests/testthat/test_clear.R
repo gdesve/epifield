@@ -3,7 +3,7 @@ context("Clear function")
 
 
 test_that("Clear memory must not ask if one", {
-  assign("globalepif.one",5,envir = .GlobalEnv)
+  globalepif.one <<- 5
   clear("globalepif.one")
   expect_equal(exists("globalepif.one"), FALSE)
 })

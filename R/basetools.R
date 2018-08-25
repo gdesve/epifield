@@ -280,8 +280,6 @@ total <- function(expr) {
 #' \dontrun{
 #' right("dummy_test",4)
 #' }
-#' @importFrom foreign read.dta
-#' @importFrom utils ls.str
 #'
 right = function (text, num_char) {
   substr(text, nchar(text) - (num_char - 1), nchar(text))
@@ -310,6 +308,10 @@ pos <- function(pattern, stosearch) {
 
 replicate <- function(char, ntime) {
   paste(rep(char, ntime), collapse = "")
+}
+
+catret  <- function(...) {
+   cat(...,"\n")
 }
 
 lpad <- function(value,
@@ -386,6 +388,7 @@ normal <- function(tx) {
 #'  command
 #'
 #' @export
+#' @importFrom foreign read.dta
 #' @param filename  Name of file to be read. Type is defined by extension
 #' @param label Label to be added as attribute to dataframe
 #' @examples
@@ -500,6 +503,7 @@ add.sep <- function(li,c) {
 #' Except if noask parameters is set to true
 #'
 #' @export
+#' @importFrom utils ls.str
 #' @param what Keyword (vars, functions, all) or pattern
 #' @param noask to clear whithout confirmation. Useful when running from a script
 #' @author Gilles Desve
@@ -568,78 +572,143 @@ clear <- function(what, noask = FALSE) {
 }
 
 
+is.var <- function(what="") {
+  lsfound <- FALSE
+  r <- try(mode(what),TRUE)
+  if ( ! inherits(r, "try-error")) {
+     mwhat <- r
+     switch(mwhat ,
+      "name" = {
+         what <- as.character(substitute(what))
+       } ,
+      "call" = {
+        what <- ""
+      } ,
+      "function" = {
+         what <- ""
+         }
+     )
+     if (length(what) > 1) {
+        what <- as.character(substitute(what))
+     }
+     if ( ! (what == "") ) {
+       lsys <- sys.nframe()-1
+       what <-glob2rx(what)
+       for (i in lsys:0)  {
+          lc <- ls(sys.frame(i),pattern=what)
+          if ( length(lc) > 0 ) lsfound <- TRUE
+       }
+     }
+   }
+   lsfound
+}
+
+
+#' @importFrom utils glob2rx
 #internal function to retrieve dataset variables
-getvar <- function(varname = NULL) {
-  var <- varname # deparse(substitute(varname))
-  m <- mode(var)
-  if (missing(varname)) {
+getvar <- function(what = NULL) {
+
+  # first, if what is missing we return previous one
+  if (missing(what)) {
     return(get_option("last_var"))
-  }
-  epif_env$last_var <- var
-  subst <- FALSE
-  # if var is char content is used
-  # if (exists(var)) {
-  #   if (is.character(varname) & length(varname)== 1 ) {
-  #      var<-eval(varname)
-  #      subst<-TRUE
-  #   }
-  # }
-  #cat(var," / ",varname, exists(var))
-  ex <- parse(text=var)
-  if (exists(var)) {
-    # if var exists it is returned as is
-    return(eval(ex))
-  }
-  if (!exists(var)) {
-    # var doesn't exist.. may be it's a formula ?
-    # if ( is.language(var) ) {
-    # r <- try(value <- varname, TRUE)
-    r <- try(eval(ex), TRUE)
-    if (!inherits(r, "try-error")) {
-      # it's a formula ... it's evaluation is returned
-      return(r)
-    } else {
-      # may be varname is part of a dataset ?
-      .df <-
-        names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-      ndf <- length(.df)
-      j <- 1
-      nfound <- 0
-      dffound <- ""
-      while (j <= ndf) {
-        ifound <- grep(var, names(get(.df[j])))
-        if (length(ifound) > 0) {
-          dfname <- .df[j]
-          nfound <- nfound + 1
-          # list of dataset containing varname
-          dffound <-
-            paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
-        }
-        j <- j + 1
+  } else {
+
+    # should we look at var content ??
+    # subst <- FALSE
+    # if var is char content is used
+    # if (exists(var)) {
+    #   if (is.character(varname) & length(varname)== 1 ) {
+    #      var<-eval(varname)
+    #      subst<-TRUE
+    #   }
+    # }
+
+    # Look at type of argument and get a working version of it
+    mwhat <- mode(what)
+    switch(mwhat ,
+      "character" = {
+        varname <- what
+      } ,
+      "call" =  {
+        varname <- deparse(what)
+      } ,
+      "name" = {
+        varname <- as.character(what)
+      } ,
+      { # else
+        varname <- what
       }
-      # only one ? great
-      if (nfound == 1) {
-        dfvar <- paste(dfname, "$", var , sep = "")
-        epif_env$last_var <- dfvar
-        return(eval(parse(text = dfvar)))
+    )
+
+    # got it, we save the name
+    epif_env$last_var <- varname
+
+    # just create an expression with content
+    ex <- parse(text=varname)
+
+    if (is.var(varname)) {
+      # if var exists it is returned as is
+      # We evaluate in case what was passed with quote
+      # because we evaluate an expression we must avoid evaluating local var !
+      # then we start with parent and go ahead until .GlobalEnv
+      lsys <- sys.nframe()-1
+      while (lsys >= 0) {
+         r <- try(eval.parent(ex,lsys-1),TRUE)
+         if (!inherits(r, "try-error")) {
+           return(r)
+           lsys <- -1
+         } else lsys <- lsys-1
+      }
+    } else {
+      # var doesn't exist.. may be it's a formula ? We try to eval but we catch error
+      r <- try(eval(ex), TRUE)
+      if (!inherits(r, "try-error")) {
+        # it's a formula ... it's evaluation is returned
+        return(r)
       } else {
-        if (nfound > 1) {
-          warning(
-            paste(
-              var ,
-              "is an ambigous name and exists in following dataset :",
-              dffound
-            ),
-            call. = FALSE
-          )
-          return(NULL)
-        } else {
-          warning(paste(var , "is not defined"), call. = FALSE)
-          return(NULL)
+        # may be varname is part of a dataset ?
+        .df <-
+          names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+        ndf <- length(.df)
+        j <- 1
+        nfound <- 0
+        dffound <- ""
+        while (j <= ndf) {
+          ifound <- grep(varname, names(get(.df[j])))
+          if (length(ifound) > 0) {
+            dfname <- .df[j]
+            nfound <- nfound + 1
+            # list of dataset containing varname
+            dffound <-
+              paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
+          }
+          j <- j + 1
         }
-      } # 0 or more than 1
-    } # it's not a formula
-  } # var not exists
+        # only one ? great
+        if (nfound == 1) {
+          varname <- paste(dfname, "$", varname , sep = "")
+          # we update varname with data.frame value
+          epif_env$last_var <- varname
+          return(eval(parse(text =varname)))
+        } else {
+          if (nfound > 1) {
+            warning(
+              paste(
+                varname ,
+                "is an ambigous name and exists in following dataset :",
+                dffound
+              ),
+              call. = FALSE
+            )
+            return(NULL)
+          } else {
+            warning(paste(varname , "is not defined"), call. = FALSE)
+            return(NULL)
+          }
+        } # 0 or more than 1
+      } # it's not a formula
+    } # var not exists
+  } # not missing
 }
 
 

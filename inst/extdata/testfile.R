@@ -1,25 +1,51 @@
 # testfile ignored by BUILD for testing function
 
-tempf <- function(arg1="essai",arg2,arg3, arg4,...) {
-  print("match.call....")
+tempf <- function(first="essai",arg2,arg3, arg4,...) {
   r <- as.list(match.call())
+  l <- length(r)
+  cat("match.call....", l , " Args\n")
   print(r)
 
-  print("--------------------")
-
-  if (!is.null(r[["arg1"]])) {
-     cat( "arg1 given :")
-     aschar <- as.character(substitute(r[["arg1"]]))
-     print(r[["arg1"]])
-     print(aschar)
-  } else print("No arg1")
-  l <- length(r)
-  print("Mode")
+  cat("Details ------\n")
   if (l>1) {
     for ( i in 2:l ) {
-      cat("arg",i," : (",as.character(r[[i]]),"): ", mode(r[[i]]), "\n")
+      arg <- r[[i]]
+      mod <- mode(arg)
+      switch (mod ,
+      "character" = {
+        name <- arg
+      } ,
+      "call" =  {
+        name <- deparse(substitute(arg))
+      } ,
+      "name" = {
+        name <- as.character(substitute(arg))
+      } ,
+      { name <- arg
+        } )
+      cat("arg",i," : ",as.character(arg) ,"(",name,") Mode : ", mode(arg),"Exists ? ",exists(name),"\n")
     }
   }
+}
+
+test_freq <- function() {
+  zou <- c(1,1,2,2,2,3)
+  freq(zou)
+}
+
+which2.envir <- function(what) {
+  cat("two :" , sys.nframe(), "\n")
+  cat("liste ", list=ls(sys.frame(-1),pattern=what)  ,"\n"  )
+  cat(exists(what), "\n")
+  print(apropos(glob2rx(what)))
+}
+
+wich.envir <- function(what) {
+  vlocal = 5
+  cat("one :" , sys.nframe(), "\n")
+  cat("liste ", list=ls(pattern=what)  ,"\n"  )
+  cat(exists(what), "\n")
+  which2.envir(what)
 }
 
 
