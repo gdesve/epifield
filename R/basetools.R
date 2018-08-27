@@ -674,11 +674,15 @@ getvar <- function(what = NULL) {
       }
     } else {
       # var doesn't exist.. may be it's a formula ? We try to eval but we catch error
+      continue <- FALSE
       r <- try(eval(ex), TRUE)
       if (!inherits(r, "try-error")) {
-        # it's a formula ... it's evaluation is returned
-        return(r)
-      } else {
+        # it's a formula ... it's evaluation is returned if not a function
+        if ( ! mode(r) == "function" ) {
+          return(r)
+        } else continue <- TRUE
+      }
+      if (continue) {
         # may be varname is part of a dataset ?
         .df <-
           names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
@@ -715,7 +719,7 @@ getvar <- function(what = NULL) {
             )
             return(NULL)
           } else {
-            warning(paste(varname , "is not defined"), call. = FALSE)
+            warning(paste(varname , "is not defined as variable or data.frame column"), call. = FALSE)
             return(NULL)
           }
         } # 0 or more than 1
