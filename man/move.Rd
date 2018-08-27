@@ -22,6 +22,6 @@ data.frame
 Move a column of a data.frame to another position
 }
 \examples{
-data(tira)
-tira <- move(tira, "uniquekey", "after", "dateonset")
+data(gastro)
+gastro <- move(gastro, "id", "after", "dayonset")
 }

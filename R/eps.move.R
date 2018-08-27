@@ -9,8 +9,8 @@
 #' @export
 #'
 #' @examples
-#' data(tira)
-#' tira <- move(tira, "uniquekey", "after", "dateonset")
+#' data(gastro)
+#' gastro <- move(gastro, "id", "after", "dayonset")
 move <- function(data, tomove, where = "last", target = NULL) {
   tomove <- as.character(substitute(tomove))
   target <- as.character(substitute(target))

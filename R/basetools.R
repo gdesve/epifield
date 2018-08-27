@@ -10,42 +10,55 @@
 # Author : Gilles Desve & al...
 #
 
+
+
+
 # Dataset must be documented
-#'#title Tiramisu outbreak
+#'#title Gastroenteritidis outbreak in pensylvania
 #'
 #' A dataset containing the data from an outbreak
 #'
-#' @format A data frame with 291 rows and 22 variables:
+#' @format A data frame with 103 rows and 32 variables:
 #' \describe{
-#'   \item{X}{Sequential number}
-#'   \item{age}{Age of cases}
-#'   \item{ill}{outcome variable}
-#'   \item{dateonset}{outcome variable}
-#'   \item{sex}{outcome variable}
-#'   \item{tira}{outcome variable}
-#'   \item{tportion}{outcome variable}
-#'   \item{wmousse}{outcome variable}
-#'   \item{dmousse}{outcome variable}
-#'   \item{mousse}{outcome variable}
-#'   \item{mportion}{outcome variable}
-#'   \item{beer}{outcome variable}
-#'   \item{uniquekey}{outcome variable}
-#'   \item{redjelly}{outcome variable}
-#'   \item{fruitsalad}{outcome variable}
-#'   \item{tomato}{outcome variable}
-#'   \item{mince}{outcome variable}
-#'   \item{salmon}{outcome variable}
-#'   \item{horseradish}{outcome variable}
-#'   \item{chickenwin}{outcome variable}
-#'   \item{roastbeef}{outcome variable}
-#'   \item{pork}{outcome variable}
+#'   \item{id}{Sequential number}
+#'   \item{dob}{Date of birth}
+#'   \item{age}{Age (year)}
+#'   \item{sex}{Sex Males / Females}
+#'   \item{floor}{Floor of residence}
+#'   \item{room}{Room number}
+#'   \item{meal}{Meal in dinning room}
+#'   \item{duration}{Duration of symptom}
+#'   \item{dayonset}{Day of onset}
+#'   \item{timeonset}{Time of onset}
+#'   \item{diarrhoea}{Diarrhoea}
+#'   \item{temperatur}{temperatur}
+#'   \item{fever}{fever}
+#'   \item{vomiting}{vomiting}
+#'   \item{abdopain}{abdopain}
+#'   \item{nausea}{nausea}
+#'   \item{headache}{headache}
+#'   \item{blended}{blended}
+#'   \item{eggs}{eggs}
+#'   \item{chicken}{chicken}
+#'   \item{potatoes}{potatoes}
+#'   \item{broccoli}{broccoli}
+#'   \item{ham}{ham}
+#'   \item{sandwich}{sandwich}
+#'   \item{fruits}{fruits}
+#'   \item{blendedfru}{blendedfru}
+#'   \item{protein}{protein}
+#'   \item{lab}{lab}
+#'   \item{agegroup}{agegroup}
+#'   \item{case}{case}
+#'   \item{earlycase}{earlycase}
+#'   \item{latecase}{latecase}
 #'
 #' }
-#' @source  Epiet case study
-"tira"
+#' @source  Alain Moren investigation & case study
+"gastro"
 
 # Dataset must be documented
-#'#title Test sample from Tiramisu outbreak
+#'#title Test sample from outbreak
 #'
 #' A dataset containing somedata for testing purpose
 #'
