@@ -22,7 +22,7 @@ test_that("File ext found in path", {
 })
 
 test_that("File dta load ", {
-  gastro5 <- use("gastro5.dta")
+  gastro5 <- read("gastro5.dta")
   expect_equal(is.data.frame(gastro5),TRUE)
   expect_equal(exists("gastro5"),TRUE)
 })

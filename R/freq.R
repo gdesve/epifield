@@ -21,27 +21,27 @@
 #'
 
 freq <- function(...) {
-  arg <- deparse(substitute(...))
+  arg.passed <- substitute(...)
 
-  var <- getvar(arg)
-  if (! is.null(var)) {
-    count <- table(var, useNA="no")
-    tot <- length(var)
+  cur.var <- getvar(arg.passed)
+  if (! is.null(cur.var)) {
+    count <- table(cur.var, useNA="no")
+    tot <- length(cur.var)
     prop <- round(prop.table(count)*100, digits = 2)
     cum <- cumsum(prop)
     result <- cbind(count,
                     prop,
                     cum)
-    mis  <- sum(is.na(var))
-    vname <- getvar()
+    mis  <- sum(is.na(cur.var))
+    var.name <- getvar()
     colnames(result) <- c("Freq", "%" , "cum%")
-    result <- rbind(result,Totals = colSums(result))
+    result <- rbind(result,Total = colSums(result))
     deci <- c(0,2,2)
     result[nrow(result),ncol(result)] <- 100
     title <- paste("Frequency distribution of ")
-    outputtable(result,deci,tot=FALSE,title,subtitle=vname)
+    outputtable(result,deci,tot=FALSE,title,subtitle=var.name)
+    # missing should be added to result
     cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
-    # print(result)
     invisible(result)
   }
 }

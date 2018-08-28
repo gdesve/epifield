@@ -1,26 +1,53 @@
 # testfile ignored by BUILD for testing function
 
-tempf <- function(all="",b=2) {
-  d <- 5
-  print("match.call....")
+tempf <- function(first="essai",arg2,arg3, arg4,...) {
   r <- as.list(match.call())
+  l <- length(r)
+  cat("match.call....", l , " Args\n")
+  print(r)
 
-  #str(r)
-  if (!is.null(r[["all"]])) {
-     print("ALL")
-  } else print("NOTALL")
-
-#  cat("Currently set values defined in call or formals\n")
-#  print(allargs())
-#  cat("Values as defined at the time of the call\n")
-#  print(allargs(T))
+  cat("Details ------\n")
+  if (l>1) {
+    for ( i in 2:l ) {
+      arg <- r[[i]]
+      mod <- mode(arg)
+      switch (mod ,
+      "character" = {
+        name <- arg
+      } ,
+      "call" =  {
+        name <- deparse(substitute(arg))
+      } ,
+      "name" = {
+        name <- as.character(substitute(arg))
+      } ,
+      { name <- arg
+        } )
+      cat("arg",i," : ",as.character(arg) ,"(",name,") Mode : ", mode(arg),"Exists ? ",exists(name),"\n")
+    }
+  }
 }
 
-
-fff = function(x, ...) {
-  args = as.list(match.call()) # contains a=1, b=2
-  print(unlist(args))
+test_freq <- function() {
+  zou <- c(1,1,2,2,2,3)
+  freq(zou)
 }
+
+which2.envir <- function(what) {
+  cat("two :" , sys.nframe(), "\n")
+  cat("liste ", list=ls(sys.frame(-1),pattern=what)  ,"\n"  )
+  cat(exists(what), "\n")
+  print(apropos(glob2rx(what)))
+}
+
+wich.envir <- function(what) {
+  vlocal = 5
+  cat("one :" , sys.nframe(), "\n")
+  cat("liste ", list=ls(pattern=what)  ,"\n"  )
+  cat(exists(what), "\n")
+  which2.envir(what)
+}
+
 
 #internal function to retrieve dataset variables
 # use of lapply could be more efficient than loop ?

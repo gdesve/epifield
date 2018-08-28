@@ -3,3 +3,4 @@
 ^testfile\.R$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^eps\.*

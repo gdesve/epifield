@@ -10,42 +10,55 @@
 # Author : Gilles Desve & al...
 #
 
+
+
+
 # Dataset must be documented
-#'#title Tiramisu outbreak
+#'#title Gastroenteritidis outbreak in pensylvania
 #'
 #' A dataset containing the data from an outbreak
 #'
-#' @format A data frame with 291 rows and 22 variables:
+#' @format A data frame with 103 rows and 32 variables:
 #' \describe{
-#'   \item{X}{Sequential number}
-#'   \item{age}{Age of cases}
-#'   \item{ill}{outcome variable}
-#'   \item{dateonset}{outcome variable}
-#'   \item{sex}{outcome variable}
-#'   \item{tira}{outcome variable}
-#'   \item{tportion}{outcome variable}
-#'   \item{wmousse}{outcome variable}
-#'   \item{dmousse}{outcome variable}
-#'   \item{mousse}{outcome variable}
-#'   \item{mportion}{outcome variable}
-#'   \item{beer}{outcome variable}
-#'   \item{uniquekey}{outcome variable}
-#'   \item{redjelly}{outcome variable}
-#'   \item{fruitsalad}{outcome variable}
-#'   \item{tomato}{outcome variable}
-#'   \item{mince}{outcome variable}
-#'   \item{salmon}{outcome variable}
-#'   \item{horseradish}{outcome variable}
-#'   \item{chickenwin}{outcome variable}
-#'   \item{roastbeef}{outcome variable}
-#'   \item{pork}{outcome variable}
+#'   \item{id}{Sequential number}
+#'   \item{dob}{Date of birth}
+#'   \item{age}{Age (year)}
+#'   \item{sex}{Sex Males / Females}
+#'   \item{floor}{Floor of residence}
+#'   \item{room}{Room number}
+#'   \item{meal}{Meal in dinning room}
+#'   \item{duration}{Duration of symptom}
+#'   \item{dayonset}{Day of onset}
+#'   \item{timeonset}{Time of onset}
+#'   \item{diarrhoea}{Diarrhoea}
+#'   \item{temperatur}{temperatur}
+#'   \item{fever}{fever}
+#'   \item{vomiting}{vomiting}
+#'   \item{abdopain}{abdopain}
+#'   \item{nausea}{nausea}
+#'   \item{headache}{headache}
+#'   \item{blended}{blended}
+#'   \item{eggs}{eggs}
+#'   \item{chicken}{chicken}
+#'   \item{potatoes}{potatoes}
+#'   \item{broccoli}{broccoli}
+#'   \item{ham}{ham}
+#'   \item{sandwich}{sandwich}
+#'   \item{fruits}{fruits}
+#'   \item{blendedfru}{blendedfru}
+#'   \item{protein}{protein}
+#'   \item{lab}{lab}
+#'   \item{agegroup}{agegroup}
+#'   \item{case}{case}
+#'   \item{earlycase}{earlycase}
+#'   \item{latecase}{latecase}
 #'
 #' }
-#' @source  Epiet case study
-"tira"
+#' @source  Alain Moren investigation & case study
+"gastro"
 
 # Dataset must be documented
-#'#title Test sample from Tiramisu outbreak
+#'#title Test sample from outbreak
 #'
 #' A dataset containing somedata for testing purpose
 #'
@@ -197,9 +210,9 @@ getdata <- function() {
 }
 
 
-#' Title count
+#' @title  count number of record / row
 #'
-#' count number of record / row corresponding to expr
+#' @description Toyal return the number of row sastifying a condition.
 #'
 #' @param expr A logical expression
 #'
@@ -207,9 +220,9 @@ getdata <- function() {
 #' @export
 #'
 #' @examples
-#' count(c(1, 2, 3, 1) == 1)
+#' total(c(1, 2, 3, 1) == 1)
 #'
-count <- function(expr) {
+total <- function(expr) {
   # print(as.list(match.call()))
   m <- NA
   if (missing(expr)) {
@@ -280,8 +293,6 @@ count <- function(expr) {
 #' \dontrun{
 #' right("dummy_test",4)
 #' }
-#' @importFrom foreign read.dta
-#' @importFrom utils ls.str
 #'
 right = function (text, num_char) {
   substr(text, nchar(text) - (num_char - 1), nchar(text))
@@ -310,6 +321,10 @@ pos <- function(pattern, stosearch) {
 
 replicate <- function(char, ntime) {
   paste(rep(char, ntime), collapse = "")
+}
+
+catret  <- function(...) {
+   cat(...,"\n")
 }
 
 lpad <- function(value,
@@ -356,7 +371,7 @@ ask <- function(message,answers) {
 
 
 ok <- function() {
-  ask("Are you ok ?", c("Yes", "Y", "y") )
+  ask("Do you confirm?", c("Yes", "Y", "y") )
 }
 
 bold <- function(tx) {
@@ -379,25 +394,26 @@ normal <- function(tx) {
 
 
 
-#'  use
+#'  read
 #'
 #'  read a data.frame.
 #'  The function try to identify the file structure in order to call the appropriate specific
 #'  command
 #'
 #' @export
+#' @importFrom foreign read.dta
 #' @param filename  Name of file to be read. Type is defined by extension
 #' @param label Label to be added as attribute to dataframe
 #' @examples
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
 #' sep = "\n")
-#' readLines(fil, n = -1)
+#' df <- read(filename=fil)
 #' unlink(fil) # tidy up
 #'
 
 
-use <- function(filename = "", label = NULL) {
+read <- function(filename = "", label = NULL) {
   # no file ? choose one
   if (filename == "") {
     r <- try(filename <- file.choose())
@@ -500,6 +516,7 @@ add.sep <- function(li,c) {
 #' Except if noask parameters is set to true
 #'
 #' @export
+#' @importFrom utils ls.str
 #' @param what Keyword (vars, functions, all) or pattern
 #' @param noask to clear whithout confirmation. Useful when running from a script
 #' @author Gilles Desve
@@ -524,12 +541,13 @@ clear <- function(what, noask = FALSE) {
     normal("  Use drop function")
     continue <- FALSE
   }
-  # if op is a variable wich contain char, we use content of op
-  if (continue & exists(swhat)) {
-    if (is.character(what) & length(what)==1) {
-      swhat <- what
-    }
-  }
+  # if expr is a variable wich contain char, we can use content of expr ?
+  # if (continue & exists(swhat,.GlobalEnv, inherits = FALSE)) {
+  #   if (is.character(what) & length(what)==1) {
+  #     twhat <- what
+  #     swhat <- ifelse(exists(twhat,.GlobalEnv, inherits = FALSE),what,swhat)
+  #   }
+  # }
   #swhat <- parse(swhat)
   if ( continue ) {
     switch (
@@ -538,7 +556,12 @@ clear <- function(what, noask = FALSE) {
       "functions" = { li = ls.str(.GlobalEnv, mode = "function") },
       "all" =  { li = ls((.GlobalEnv)) },
       {
-        li <- ls(.GlobalEnv, pattern = swhat)
+        # there is an objects with that name... we remove it
+        if ( exists(swhat) ) {
+          li <- c(swhat)
+        } else {
+           li <- ls(.GlobalEnv, pattern = swhat)
+        }
       }
     )
     l <- length(li)
@@ -546,94 +569,163 @@ clear <- function(what, noask = FALSE) {
       lid <- add.sep(li,"- ")
       cat(l, " objet(s) to remove :")
       italic(as.character(lid))
-      if (l == 1 ||  noask || ok()  ) {
-        if (noask || ask("Are you ok ?", c("Yes", "Y", "y"))) {
+      normal("\n")
+      if ( ( l == 1 & li[1]==swhat ) ||  noask || ok() ) {
           rm(list = li, envir = .GlobalEnv)
-        }
-      } else {
+      }
+    } else {
         cat("No such objets :'")
         italic(swhat)
         normal("'. Use keywords:")
         bold("vars, functions, all")
         normal(" or a pattern (see help)")
-      }
     }
     result <- gc()  # garbage collector
   }
 }
 
 
-#internal function to retrieve dataset variables
-getvar <- function(varname = NULL) {
-  var <- varname # deparse(substitute(varname))
-  if (missing(varname)) {
-    return(get_option("last_var"))
-  }
-  epif_env$last_var <- var
-  subst <- FALSE
-  # if var is char content is used
-  if (exists(var)) {
-     if (is.character(varname) & length(varname)== 1 ) {
-        var<-eval(varname)
-        subst<-TRUE
+is.var <- function(what="") {
+  lsfound <- FALSE
+  r <- try(mode(what),TRUE)
+  if ( ! inherits(r, "try-error")) {
+     mwhat <- r
+     switch(mwhat ,
+      "name" = {
+         what <- as.character(substitute(what))
+       } ,
+      "call" = {
+        what <- ""
+      } ,
+      "function" = {
+         what <- ""
+         }
+     )
+     if (length(what) > 1) {
+        what <- as.character(substitute(what))
      }
-  }
-  #cat(var," / ",varname, exists(var))
-  if  (exists(var) ) {
-    # if var exists it is returned as is
-    return(varname)
-  }
-  if (! exists(var) ) {
-    # var doesn't exist.. may be it's a formula ?
-    if ( is.language(var) ) {
-      r <- try(value <- varname, TRUE)
-      if ( !inherits(r, "try-error")) {
-        # it's a formula ... it's evaluation is returned
-        return(r)
+     if ( ! (what == "") ) {
+       lsys <- sys.nframe()-1
+       what <-glob2rx(what)
+       for (i in lsys:0)  {
+          lc <- ls(sys.frame(i),pattern=what)
+          if ( length(lc) > 0 ) lsfound <- TRUE
+       }
+     }
+   }
+   lsfound
+}
+
+
+#' @importFrom utils glob2rx
+#internal function to retrieve dataset variables
+getvar <- function(what = NULL) {
+
+  # first, if what is missing we return previous one
+  if (missing(what)) {
+    return(get_option("last_var"))
+  } else {
+
+    # should we look at var content ??
+    # subst <- FALSE
+    # if var is char content is used
+    # if (exists(var)) {
+    #   if (is.character(varname) & length(varname)== 1 ) {
+    #      var<-eval(varname)
+    #      subst<-TRUE
+    #   }
+    # }
+
+    # Look at type of argument and get a working version of it
+    mwhat <- mode(what)
+    switch(mwhat ,
+      "character" = {
+        varname <- what
+      } ,
+      "call" =  {
+        varname <- deparse(what)
+      } ,
+      "name" = {
+        varname <- as.character(what)
+      } ,
+      { # else
+        varname <- what
       }
-    }
-    else {
-      # may be varname is part of a dataset ?
-      .df <-
-        names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-      ndf <- length(.df)
-      j <- 1
-      nfound <- 0
-      dffound <- ""
-      while (j <= ndf) {
-        ifound <- grep(var, names(get(.df[j])))
-        if (length(ifound) > 0) {
-          dfname <- .df[j]
-          nfound <- nfound + 1
-          # list of dataset containing varname
-          dffound <-
-            paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
+    )
+
+    # got it, we save the name
+    epif_env$last_var <- varname
+
+    # just create an expression with content
+    ex <- parse(text=varname)
+
+    if (is.var(varname)) {
+      # if var exists it is returned as is
+      # We evaluate in case what was passed with quote
+      # because we evaluate an expression we must avoid evaluating local var !
+      # then we start with parent and go ahead until .GlobalEnv
+      lsys <- sys.nframe()-1
+      while (lsys >= 0) {
+         r <- try(eval.parent(ex,lsys-1),TRUE)
+         if (!inherits(r, "try-error")) {
+           return(r)
+           lsys <- -1
+         } else lsys <- lsys-1
+      }
+    } else {
+      # var doesn't exist.. may be it's a formula ? We try to eval but we catch error
+      continue <- FALSE
+      r <- try(eval(ex), TRUE)
+      if (!inherits(r, "try-error")) {
+        # it's a formula ... it's evaluation is returned if not a function
+        if ( ! mode(r) == "function" ) {
+          return(r)
+        } else continue <- TRUE
+      }
+      if (continue) {
+        # may be varname is part of a dataset ?
+        .df <-
+          names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+        ndf <- length(.df)
+        j <- 1
+        nfound <- 0
+        dffound <- ""
+        while (j <= ndf) {
+          ifound <- grep(varname, names(get(.df[j])))
+          if (length(ifound) > 0) {
+            dfname <- .df[j]
+            nfound <- nfound + 1
+            # list of dataset containing varname
+            dffound <-
+              paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
+          }
+          j <- j + 1
         }
-        j <- j + 1
-      }
-      # only one ? great
-      if (nfound == 1) {
-        dfvar <- paste(dfname, "$", var , sep = "")
-        epif_env$last_var <- dfvar
-        return(eval(parse(text = dfvar)))
-      } else {
-        if (nfound > 1) {
-          warning(
-            paste(
-              var ,
-              "is an ambigous name and exists in following dataset :",
-              dffound
-            ),
-            call. = FALSE
-          )
-          return(NULL)
+        # only one ? great
+        if (nfound == 1) {
+          varname <- paste(dfname, "$", varname , sep = "")
+          # we update varname with data.frame value
+          epif_env$last_var <- varname
+          return(eval(parse(text =varname)))
         } else {
-          warning(paste(var , "is not defined"), call. = FALSE)
-          return(NULL)
-        }
-      }
-    }
-  }
+          if (nfound > 1) {
+            warning(
+              paste(
+                varname ,
+                "is an ambigous name and exists in following dataset :",
+                dffound
+              ),
+              call. = FALSE
+            )
+            return(NULL)
+          } else {
+            warning(paste(varname , "is not defined"), call. = FALSE)
+            return(NULL)
+          }
+        } # 0 or more than 1
+      } # it's not a formula
+    } # var not exists
+  } # not missing
 }
 
 

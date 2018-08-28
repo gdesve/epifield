@@ -21,4 +21,5 @@ Extract x rigth characters from a text
 \dontrun{
 right("dummy_test",4)
 }
+
 }

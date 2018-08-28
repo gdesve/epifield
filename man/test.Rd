@@ -3,7 +3,7 @@
 \docType{data}
 \name{test}
 \alias{test}
-\title{#title Test sample from Tiramisu outbreak}
+\title{#title Test sample from outbreak}
 \format{A data frame with 10 rows and 5 variables:
 \describe{
   \item{X}{Sequential number}
