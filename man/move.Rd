@@ -22,6 +22,12 @@ data.frame
 Move a column of a data.frame to another position
 }
 \examples{
+<<<<<<< HEAD
+library(EpiStats)
+data(Tiramisu)
+Tiramisu <- move(Tiramisu, "uniquekey", "after", "dateonset")
+=======
 data(gastro)
 gastro <- move(gastro, "id", "after", "dayonset")
+>>>>>>> 857c6d91e0a243275a75b05331046e367ef09565
 }
