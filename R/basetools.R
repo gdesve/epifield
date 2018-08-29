@@ -584,7 +584,7 @@ clear <- function(what, noask = FALSE) {
   }
 }
 
-
+# exists look only in GlobalEnv and parent, is.var will search from current and parent until global but not in base
 is.var <- function(what="") {
   lsfound <- FALSE
   r <- try(mode(what),TRUE)
@@ -680,8 +680,15 @@ getvar <- function(what = NULL) {
         # it's a formula ... it's evaluation is returned if not a function
         if ( ! mode(r) == "function" ) {
           return(r)
-        } else continue <- TRUE
-      }
+        } else {
+          warning(
+            paste(
+              varname ,
+              "is probably not a variable but a function"),
+            call. = FALSE
+          )
+        }
+      } else continue <- TRUE
       if (continue) {
         # may be varname is part of a dataset ?
         .df <-
@@ -706,7 +713,8 @@ getvar <- function(what = NULL) {
           varname <- paste(dfname, "$", varname , sep = "")
           # we update varname with data.frame value
           epif_env$last_var <- varname
-          return(eval(parse(text =varname)))
+          r <- try(eval(parse(text =varname)),TRUE)
+          return(r)
         } else {
           if (nfound > 1) {
             warning(

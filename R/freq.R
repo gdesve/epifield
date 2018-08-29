@@ -73,10 +73,9 @@ freq <- function(...) {
 #'
 #'
 epitable <- function(exp,out)  {
-
-   expdata <- getvar(deparse(exp))
-   outdata <- getvar(out)
+   r <- as.list(match.call())
+   expdata <- getvar(r$exp)
+   outdata <- getvar(r$out)
    r <- table(expdata,outdata)
-   m <- 1
-
+   r
 }
