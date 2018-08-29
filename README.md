@@ -17,14 +17,18 @@ Clear: clear values, data, function / pattern
 Drop: drop variables, drop records
 
 Graphs: line graphs, bar charts, histogrammes [for secular trends exercise]
-
-Missing data: The equivalent of misschk in Stata (but without the patterns table)
+-----------------
+- checkMissing
+- Syntax: checkMissing(data, vars=NULL, sort=FALSE)
+- Description: Missing data: The equivalent of misschk in Stata (but without the patterns table)
+-----------------
 
 Label values (for non-binary variables or non obvious order binary variables, e.g. male/female)
 
 -----------------
 - rename 
-- Syntax: rename( data, colnames, newname)
+- Syntax: rename( data, colname, newname)
+- Description:
 -----------------
 logreg  logistic regression
 
