@@ -1,4 +1,4 @@
-checkMissing <- function(data, vars=NULL, sort) {
+checkMissing <- function(data, vars=NULL, sort=FALSE) {
   Names = names(data)
   if (is.null(vars) == FALSE) {
     Names = vars;
