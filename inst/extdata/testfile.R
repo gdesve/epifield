@@ -6,6 +6,9 @@ tempf <- function(first="essai",arg2,arg3, arg4,...) {
   cat("match.call....", l , " Args\n")
   print(r)
 
+  params <- names(r)
+  cat(params)
+
   cat("Details ------\n")
   if (l>1) {
     for ( i in 2:l ) {
@@ -21,9 +24,12 @@ tempf <- function(first="essai",arg2,arg3, arg4,...) {
       "name" = {
         name <- as.character(substitute(arg))
       } ,
+      "logical" = {
+        name <- as.character(substitute(arg))
+      } ,
       { name <- arg
         } )
-      cat("arg",i," : ",as.character(arg) ,"(",name,") Mode : ", mode(arg),"Exists ? ",exists(name),"\n")
+      cat("arg",i-1," : ",names(r[i]) , "Val:", as.character(arg) ,"(",name,") Mode : ", mode(arg),"Exists ? ",ifelse(mod=="name",exists(name),FALSE),"\n")
     }
   }
 }

@@ -4,7 +4,7 @@
 \alias{epitable}
 \title{Cross tabulation ( 2by2 table).}
 \usage{
-epitable(exp, out)
+epitable(exp, out, row = FALSE, col = FALSE)
 }
 \arguments{
 \item{exp}{"Exposure" as numbers, factors or text.}
