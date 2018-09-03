@@ -9,7 +9,7 @@ Description: epifiel is designed to help epidemiologist switching from EPI6/STAT
     provide feedback on console regarding R command. 
     provide advices for beginners.
 Depends: R (>= 3.0.0), utils
-Imports: foreign
+Imports: foreign, ggplot2
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
@@ -19,3 +19,12 @@ Suggests:
     rmarkdown
 RoxygenNote: 6.1.0
 VignetteBuilder: knitr
+Collate: 
+    'basetools.R'
+    'checkmissing.R'
+    'epifield.R'
+    'eps.move.R'
+    'eps.rename.R'
+    'freq.R'
+    'hello.R'
+    'plots.R'

@@ -14,7 +14,8 @@
 #' @seealso \code{\link{barchart}} for bar graph
 #' @export
 #'
-#' @param ... As numbers, factors or text.
+#' @param xvar As numbers, factors or text.
+#' @param df As data.frame
 #' @return An array containing  resulting graph
 #' #' @examples
 #' histogram(c(3,1,2,2,5))

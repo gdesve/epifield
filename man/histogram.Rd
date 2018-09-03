@@ -7,7 +7,9 @@
 histogram(xvar, df = as.data.frame())
 }
 \arguments{
-\item{...}{As numbers, factors or text.}
+\item{xvar}{As numbers, factors or text.}
+
+\item{df}{As data.frame}
 }
 \value{
 An array containing  resulting graph
