@@ -62,6 +62,7 @@ freq <- function(...) {
 #' available at \url{https://github.com/}.
 #'
 #' @seealso \code{\link{freq}} for frequency distributions
+#' @importFrom stats chisq.test fisher.test
 #' @export
 #' @param exp  "Exposure" as numbers, factors or text.
 #' @param out  "Outcome" as numbers, factors or text
@@ -72,10 +73,41 @@ freq <- function(...) {
 #' }
 #'
 #'
-epitable <- function(exp,out)  {
+epitable <- function(exp,out,row=FALSE,col=FALSE)  {
    r <- as.list(match.call())
    expdata <- getvar(r$exp)
+   expdata.name <- getvar()
+
+   tot <- length(expdata)
+
    outdata <- getvar(r$out)
-   r <- table(expdata,outdata)
-   r
+   outdata.name <- getvar()
+   # length to be verified
+
+   # to get options
+   params <- names(r)
+
+   # calculations
+   r <- table(expdata,outdata,useNA="no")
+   # check size of result table
+   bin <- (dim(r)==c(2,2)&&TRUE)
+
+   mis  <- sum(is.na(expdata)|is.na(outdata))
+   if (bin) {
+     t <- chisq.test(r)
+     f <- fisher.test(r)$p.value
+   }
+   print(r)
+
+   if (row) {
+     prop <- prop.table(r,1)
+     prop <- cbind(prop,100)
+     print(prop)
+   }
+
+
+   cat(t$statistic,"(", t$p.value,") Fisherexact :",f)
+
+   cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+
 }

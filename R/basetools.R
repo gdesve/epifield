@@ -817,3 +817,16 @@ rename <- function(oldname, newname) {
   names(data) <- sub(oldname, newname, names(data))
 
 }
+
+#
+# KHI2 <- function(A, B, C, D)
+# {
+#   t <- chisq.test(matrix(c(A,B,C,D),ncol=2), correct=FALSE);
+#   return(c(t$statistic, t$p.value));
+# }
+#
+# computeFisher <- function(A, B, C, D)
+# {
+#   t <- fisher.test(matrix(c(A,B,C,D),ncol=2));
+#   t$p.value
+# }
