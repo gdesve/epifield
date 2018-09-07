@@ -1,3 +1,16 @@
+#' checkMissing
+#'
+#' @param data data.frame
+#' @param vars NULL or a vector of colnames
+#' @param sort boolean If TRUE the output table is sorted
+#'
+#' @return list of 2 tables
+#' @export checkMissing
+#'
+#' @author Jean Pierre Decorps
+#'
+#' @examples
+#' # still nothing
 checkMissing <- function(data, vars=NULL, sort=FALSE) {
   Names = names(data)
   if (is.null(vars) == FALSE) {
