@@ -2,6 +2,7 @@
 
 export(checkMissing)
 export(clear)
+export(epiorder)
 export(epitable)
 export(freq)
 export(get_option)

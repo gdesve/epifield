@@ -1,0 +1,50 @@
+---
+title: "epiorder"
+author: "Jean Pierre Decrorps"
+date: "28 août 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## epiorder
+
+
+```{r echo=FALSE, message=FALSE}
+library(EpiStats)
+library(epifield)
+library(knitr)
+
+```
+
+## epiorder ill, tira, beer with automatic labels from values
+```{r}
+data(Tiramisu)
+str(Tiramisu)
+Tiramisu <- epiorder(Tiramisu, c("ill", "tira", "beer"), values = c(1,0)) %>%
+str(Tiramisu)
+```
+
+## epiorder ill, tira, beer with YES/NO labels
+```{r}
+data(Tiramisu)
+Tiramisu <- epiorder(Tiramisu, c("ill", "tira", "beer"), values = c(1,0), labels = c("YES", "NO")) %>%
+str(Tiramisu)
+```
+
+
+## You can use pipe (%>%) too
+```{r}
+data(Tiramisu)
+Tiramisu %<>% epiorder("ill", values = c(1,0)) %>%
+  epiorder(c("tira", "wmousse", "dmousse", "mousse"), values = c(1,0), labels = c("YES", "NO")) %>%
+  epiorder(c("beer", "redjelly", "fruitsalad", "tomato"), values = c(1,0), labels = c("YES", "NO")) %>%
+  epiorder(c("mince", "salmon", "horseradish", "chickenwin"), values = c(1,0), labels = c("YES", "NO")) %>%
+  epiorder(c("roastbeef", "pork"), values = c(1,0), labels = c("YES", "NO"))
+str(Tiramisu)
+```
+

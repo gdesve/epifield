@@ -23,6 +23,7 @@ Collate:
     'basetools.R'
     'checkmissing.R'
     'epifield.R'
+    'epiorder.R'
     'eps.move.R'
     'eps.rename.R'
     'freq.R'
