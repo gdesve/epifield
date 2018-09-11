@@ -21,7 +21,6 @@ RoxygenNote: 6.1.0
 VignetteBuilder: knitr
 Collate: 
     'basetools.R'
-    'checkmissing.R'
     'epifield.R'
     'eps.move.R'
     'eps.rename.R'
