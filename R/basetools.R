@@ -691,37 +691,21 @@ getvar <- function(what = NULL) {
       } else continue <- TRUE
       if (continue) {
         # may be varname is part of a dataset ?
-        .df <-
-          names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-        ndf <- length(.df)
-        j <- 1
-        nfound <- 0
-        dffound <- ""
-        while (j <= ndf) {
-          ifound <- grep(varname, names(get(.df[j])))
-          if (length(ifound) > 0) {
-            dfname <- .df[j]
-            nfound <- nfound + 1
-            # list of dataset containing varname
-            dffound <-
-              paste0(dffound, ifelse(dffound == "", "", ", "), dfname)
-          }
-          j <- j + 1
-        }
+        dffound <- finddf(varname)
         # only one ? great
-        if (nfound == 1) {
-          varname <- paste(dfname, "$", varname , sep = "")
+        if (dffound$count == 1) {
+          varname <- paste(dffound$namelist[[1]], "$", varname , sep = "")
           # we update varname with data.frame value
           epif_env$last_var <- varname
           r <- try(eval(parse(text =varname)),TRUE)
           return(r)
         } else {
-          if (nfound > 1) {
+          if (dffound$count > 1) {
             warning(
               paste(
                 varname ,
                 "is an ambigous name and exists in following dataset :",
-                dffound
+                dffound$namestring
               ),
               call. = FALSE
             )
@@ -734,6 +718,32 @@ getvar <- function(what = NULL) {
       } # it's not a formula
     } # var not exists
   } # not missing
+}
+
+finddf <- function(varname) {
+  .df <-
+    names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+  ndf <- length(.df)
+  j <- 1
+  nfound <- 0
+  dffound <- ""
+  dflist <- list()
+  while (j <= ndf) {
+    ifound <- grep(varname, names(get(.df[j])))
+    if (length(ifound) > 0) {
+      nfound <- nfound + 1
+      dflist[nfound] <- .df[j]
+      # list of dataset containing varname
+      dffound <-
+        paste0(dffound, ifelse(dffound == "", "", ", "), .df[j])
+    }
+    j <- j + 1
+  }
+  r <- list()
+  r$count <- nfound
+  r$namelist <- dflist
+  r$namestring <- dffound
+  return(r)
 }
 
 

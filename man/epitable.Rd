@@ -10,6 +10,10 @@ epitable(exp, out, row = FALSE, col = FALSE)
 \item{exp}{"Exposure" as numbers, factors or text.}
 
 \item{out}{"Outcome" as numbers, factors or text}
+
+\item{row}{"Row percentages"}
+
+\item{col}{"Col percentages"}
 }
 \value{
 An array containing  values of \code{...}   \code{}

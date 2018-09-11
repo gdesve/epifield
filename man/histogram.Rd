@@ -25,7 +25,7 @@ Based on: \emph{Epi6} and \emph{Stata} functionnality,
 available at \url{https://github.com/}.
 }
 \seealso{
-\code{\link{barchart}} for bar graph
+\code{\link{bargraph}} for bar graph
 }
 \author{
 Gilles Desve

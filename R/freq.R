@@ -66,6 +66,8 @@ freq <- function(...) {
 #' @export
 #' @param exp  "Exposure" as numbers, factors or text.
 #' @param out  "Outcome" as numbers, factors or text
+#' @param row  "Row percentages"
+#' @param col  "Col percentages"
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
 #' \dontrun{

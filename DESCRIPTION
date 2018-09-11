@@ -8,8 +8,8 @@ Description: epifiel is designed to help epidemiologist switching from EPI6/STAT
     reproduce some usual functions for outbreak investigation.
     provide feedback on console regarding R command. 
     provide advices for beginners.
-Depends: R (>= 3.0.0), utils
-Imports: foreign, ggplot2
+Depends: R (>= 3.0.0), utils, ggplot2
+Imports: foreign 
 License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
