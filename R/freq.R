@@ -89,27 +89,89 @@ epitable <- function(exp,out,row=FALSE,col=FALSE)  {
    # to get options
    params <- names(r)
 
-   # calculations
-   r <- table(expdata,outdata,useNA="no")
-   # check size of result table
-   bin <- (dim(r)==c(2,2)&&TRUE)
+   if (! ( is.null(expdata) |  is.null(outdata) )  ) {
 
-   mis  <- sum(is.na(expdata)|is.na(outdata))
-   if (bin) {
-     t <- chisq.test(r)
-     f <- fisher.test(r)$p.value
+
+     # calculations
+     r <- table(expdata,outdata,useNA="no")
+     names(dimnames(r))  <- c(expdata.name,outdata.name)
+     # check size of result table
+     bin <- (dim(r)==c(2,2)&&TRUE)
+
+     mis  <- sum(is.na(expdata)|is.na(outdata))
+     if (bin) {
+       t <- chisq.test(r)
+       f <- fisher.test(r)$p.value
+     }
+     print(r)
+
+     if (row) {
+       prop <- prop.table(r,1)
+       prop <- cbind(prop,100)
+       print(prop)
+     }
+
+     result <- list()
+     result$table <- r
+     result$f <- t$p.value
+
+     cat(t$statistic,"(", t$p.value,") Fisherexact :",f)
+
+     cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+
+     return(result)
    }
-   print(r)
-
-   if (row) {
-     prop <- prop.table(r,1)
-     prop <- cbind(prop,100)
-     print(prop)
-   }
+}
 
 
-   cat(t$statistic,"(", t$p.value,") Fisherexact :",f)
+# epifield documentation using roxygen2
+#' @title
+#' Reorder data for epi table ( 2by2 table).
+#' @description
+#' \code{epiorder} Rearrange order of factor variable to produce classical epi table
+#'  1/0  Yes/No  +/-
+#'
+#'
+#' @name epiorder
+#'
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality,
+#' available at \url{https://github.com/}.
+#'
+#' @seealso \code{\link{epitable}} for cross tabulation
+#' @export
+#' @param var  Variable to reorder (will be converted as factor).
+#' @param mode "Yesno"   "Yesno"  "10" "+-"
+#' @param custom  Custom labels
+#'
+#' @return A vector reordered
+#' @examples
+#' \dontrun{
+#' epiorder(c(0,1,0,1,1))
+#' }
+#'
+#'
+epiorder <- function(var,mode="Yesno",custom=NULL) {
+  r <- as.list(match.call())
+  coldata <- getvar(r$var)
+  # colname <- getvar()
+  colname <- as.character(substitute(var))
+  dfname <- get_option("last_df")
+  df=get(dfname)
+  if (! is.null(coldata) ) {
+     coldata <- factor(coldata)
+     coldata <- factor(coldata, levels = c(1,0) , labels = c("Yes","No"), ordered = TRUE)
+  }
 
-   cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+  df[,colname] <- coldata
 
+  assign(dfname,df,inherits = TRUE )
+
+  exp = call("<-",dfname,df)
+  eval(exp,envir=.GlobalEnv)
+
+  # exp <- paste0(substitute(var),"<- coldata")
+  # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
+  # r
+  df
 }

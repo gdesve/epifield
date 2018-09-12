@@ -16,18 +16,21 @@
 #' @import ggplot2
 #'
 #' @param xvar As numbers, factors or text.
-#' @param df As data.frame
+#' @param title As character : main title
 #' @return An array containing  resulting graph
 #' #' @examples
 #' histogram(c(3,1,2,2,5))
 #'
-histogram <- function(xvar, df=as.data.frame() ) {
-
-  ggplot(data=df, aes(x=xvar) ) + geom_histogram(color="white",fill="blue3",binwidth = 1) +
+histogram <- function(xvar, title ) {
+  r <- as.list(match.call())
+  var <- getvar(r$xvar)
+  df <- getdf()
+  if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
+  suppressWarnings( ggplot(data=df, aes(x=var) ) + geom_histogram(stat="count", color="white",fill="blue3") +
     expand_limits( y = 0) +
     scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
-    labs(title="Histogram") + epitheme()
-
+    labs(title=title) + epitheme()
+  )
 }
 
 # epifield documentation using roxygen2
@@ -48,14 +51,19 @@ histogram <- function(xvar, df=as.data.frame() ) {
 #' @import ggplot2
 #'
 #' @param xvar As numbers, factors or text.
-#' @param df As data.frame
+#' @param title As character : main title
 #' @return An array containing  resulting graph
 #' #' @examples
 #' bargraph(c(3,1,2,2,5))
 #'
-bargraph <-function(xvar, df=as.data.frame())  {
-  df$fvar <- as.factor((xvar))
-  ggplot(data=df, aes(x=fvar) ) + geom_bar(color="white",fill="blue3") +
+bargraph <-function(xvar,title )  {
+  r <- as.list(match.call())
+  var <- getvar(r$xvar)
+  df <- getdf()
+  if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
+
+  var <- as.factor((var))
+  ggplot(data=df, aes(x=var) ) + geom_bar(color="white",fill="blue3") +
     expand_limits( y = 0) +
     scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
     labs(title="Frequency distribution") + epitheme()

@@ -87,6 +87,8 @@ FIRST <- 12
 COL   <- 8
 
 epif_env$last_var <- ""
+epif_env$last_df <- ""
+
 
 #' get_option
 #'
@@ -208,6 +210,25 @@ getdata <- function() {
   }
   df
 }
+
+
+getdf <- function() {
+
+  df <- get_option("last_df")  # epif_env$last_df
+
+  if ( is.character(df) ) {
+    if (! df == "") {
+      # dataset contain name ... then get the data.frame
+      df <- eval(parse(text = df))
+    }
+  }
+  # we verify that we finally have a dataframe
+  if ( ! is.data.frame(df)) {
+    df <- NULL
+  }
+  df
+}
+
 
 
 #' @title  count number of record / row
@@ -694,9 +715,11 @@ getvar <- function(what = NULL) {
         dffound <- finddf(varname)
         # only one ? great
         if (dffound$count == 1) {
-          varname <- paste(dffound$namelist[[1]], "$", varname , sep = "")
+          dfname <- dffound$namelist[[1]]
+          varname <- paste(dfname, "$", varname , sep = "")
           # we update varname with data.frame value
           epif_env$last_var <- varname
+          epif_env$last_df <- dfname
           r <- try(eval(parse(text =varname)),TRUE)
           return(r)
         } else {
@@ -796,31 +819,43 @@ outputtable <-
 
 
 
-getdf <- function(varname) {
-  .df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-  ndf <- length(.df)
-  j <- 1
-  nfound <- 0
-  while (j <= ndf) {
-    ifound <- grep(varname, names(get(.df[j])))
-    if (length(ifound) > 0) {
-      dfname <- .df[j]
-      nfound <- nfound + 1
-    }
-    # cat(.df[j]," ",ifound," ",nfound," ",dfname)
-    j <- j + 1
-  }
-  if (nfound == 1) {
-    dfvar <- paste(dfname, "$", varname , sep = "")
-    return(eval(parse(text = dfvar)))
-  } else {
-    if (nfound > 1) {
-      cat(varname , " is ambigous")
-    } else {
-      cat(varname , "is not defined")
-    }
-  }
-}
+#' @title Replacement for |
+#'
+#' @description  %or% can be used everywhere | is used.
+#' To be tested
+#'
+#' @details
+#' it's mainly for those whitout | on keyboard
+#'
+#' @export
+#' @param a logical or condition
+#' @param b logical or condition
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality, available at \url{https://github.com/}.
+#' @examples
+#' TRUE %or% FALSE
+#'
+#'
+`%or%` <- function(a, b) return(a|b)
+
+
+#' @title Replacement for &
+#'
+#' @description  %and% can be used everywhere & is used.
+#' To be tested
+#'
+#' @details
+#' it's mainly for those whitout & on keyboard
+#'
+#' @export
+#' @param a logical or condition
+#' @param b logical or condition
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality, available at \url{https://github.com/}.
+#' @examples
+#' TRUE %and% TRUE
+#'
+`%and%` <- function(a, b) return(a&b)
 
 
 rename <- function(oldname, newname) {
