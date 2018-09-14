@@ -23,7 +23,6 @@ Collate:
     'basetools.R'
     'epifield.R'
     'eps.move.R'
-    'eps.rename.R'
     'freq.R'
     'hello.R'
     'plots.R'
