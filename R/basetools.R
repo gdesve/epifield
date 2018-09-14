@@ -86,9 +86,11 @@ LINE  <- "-"
 FIRST <- 12
 COL   <- 8
 
-epif_env$last_var <- ""
-epif_env$last_df <- ""
-
+resetvar <- function() {
+  epif_env$last_var <- ""
+  epif_env$last_varname <- ""
+  epif_env$last_df <- ""
+}
 
 #' get_option
 #'
@@ -219,6 +221,7 @@ getdf <- function() {
   if ( is.character(df) ) {
     if (! df == "") {
       # dataset contain name ... then get the data.frame
+      # df <- get(df) ?
       df <- eval(parse(text = df))
     }
   }
@@ -231,11 +234,13 @@ getdf <- function() {
 
 
 
-#' @title  count number of record / row
+#' @title count number of record / row
 #'
 #' @description Toyal return the number of row sastifying a condition.
 #'
-#' @param expr A logical expression
+#' @param expr A logical expression ora data.frame.I f a data.frame is given,
+#' total() return the number of rows. If a logical expression is given, total() return
+#' the number of records satisfaying the condition
 #'
 #' @return Number of rows macthing expr
 #' @export
@@ -395,20 +400,20 @@ ok <- function() {
   ask("Do you confirm?", c("Yes", "Y", "y") )
 }
 
-bold <- function(tx) {
-  cat("\033[1m",tx,sep="")
+bold <- function(...) {
+  cat("\033[1m",...,sep="")
 }
 
-italic <- function(tx) {
-  cat("\033[3m",tx,sep="")
+italic <- function(...) {
+  cat("\033[3m",...,sep="")
 }
 
-red <- function(tx) {
-  cat("\033[31m",tx,sep="")
+red <- function(...) {
+  cat("\033[31m",...,sep="")
 }
 
-normal <- function(tx) {
-  cat("\033[0m",tx,sep="")
+normal <- function(...) {
+  cat("\033[0m",...,sep="")
 }
 
 
@@ -638,6 +643,9 @@ is.var <- function(what="") {
 }
 
 
+getvarname <- function()  { return(get_option("last_varname")) }
+
+
 #' @importFrom utils glob2rx
 #internal function to retrieve dataset variables
 getvar <- function(what = NULL) {
@@ -656,6 +664,8 @@ getvar <- function(what = NULL) {
     #      subst<-TRUE
     #   }
     # }
+    # reset of global vars
+    resetvar()
 
     # Look at type of argument and get a working version of it
     mwhat <- mode(what)
@@ -676,6 +686,7 @@ getvar <- function(what = NULL) {
 
     # got it, we save the name
     epif_env$last_var <- varname
+    epif_env$last_varname <- varname
 
     # just create an expression with content
     ex <- parse(text=varname)
@@ -716,11 +727,12 @@ getvar <- function(what = NULL) {
         # only one ? great
         if (dffound$count == 1) {
           dfname <- dffound$namelist[[1]]
-          varname <- paste(dfname, "$", varname , sep = "")
+          varfullname <- paste(dfname, "$", varname , sep = "")
           # we update varname with data.frame value
-          epif_env$last_var <- varname
+          epif_env$last_var <- varfullname
+          epif_env$last_varname <- varname
           epif_env$last_df <- dfname
-          r <- try(eval(parse(text =varname)),TRUE)
+          r <- try(eval(parse(text =varfullname)),TRUE)
           return(r)
         } else {
           if (dffound$count > 1) {
@@ -796,9 +808,9 @@ outputtable <-
   function(table,
            deci = NULL,
            tot = FALSE,
-           title = "Frequency distribution",
-           subtitle = "")  {
-    cat(title, "\n")
+           title = "Frequency distribution")  {
+    catret(title)
+    catret("")
     ncol <- dim(table)[2]
     nline <- dim(table)[1]
     coln <- colnames(table)
@@ -808,7 +820,7 @@ outputtable <-
       deci[1:nline] <- 0
     }
     # Les entêtes de colonne
-    tab_row(subtitle, coln, deci, tot)
+    tab_row(names(dimnames(table))[1], coln, deci, tot)
     tab_line(ncol, tot)
     for (i in (1:(nline - 1))) {
       tab_row(rown[i], table[i, ], deci, tot)
@@ -816,6 +828,19 @@ outputtable <-
     tab_line(ncol, tot)
     tab_row(rown[nline], table[nline, ], deci, tot)
   }
+
+
+rename <- function(oldname, newname) {
+  r <- as.list(match.call())
+  old <- getvar(r$oldname)
+  old.name <- getvarname()
+  df <- getdf()
+
+  newname <- as.character(substitute(newname))
+
+  names(df) <- sub(old.name, newname, names(df))
+
+}
 
 
 
@@ -836,7 +861,7 @@ outputtable <-
 #' TRUE %or% FALSE
 #'
 #'
-`%or%` <- function(a, b) return(a|b)
+`%or%` <- function(a, b) {return(a|b) }
 
 
 #' @title Replacement for &
@@ -855,13 +880,8 @@ outputtable <-
 #' @examples
 #' TRUE %and% TRUE
 #'
-`%and%` <- function(a, b) return(a&b)
+`%and%` <- function(a, b) { return(a&b) }
 
-
-rename <- function(oldname, newname) {
-  names(data) <- sub(oldname, newname, names(data))
-
-}
 
 #
 # KHI2 <- function(A, B, C, D)
