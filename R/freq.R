@@ -160,6 +160,12 @@ epiorder <- function(var,mode="Yesno",custom=NULL) {
   df=get(dfname)
   if (! is.null(coldata) ) {
      coldata <- factor(coldata)
+     # verify it's binaire
+     collevels <- nlevels(coldata)
+     switch (mode,
+       "Yesno" = lab <- c("Yes","No")
+     )
+
      coldata <- factor(coldata, levels = c(1,0) , labels = c("Yes","No"), ordered = TRUE)
   }
 
