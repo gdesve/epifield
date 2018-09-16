@@ -4,7 +4,7 @@
 \alias{epiorder}
 \title{Reorder data for epi table ( 2by2 table).}
 \usage{
-epiorder(var, mode = "Yesno", custom = NULL)
+epiorder(var, mode = "yesno", custom = NULL)
 }
 \arguments{
 \item{var}{Variable to reorder (will be converted as factor).}

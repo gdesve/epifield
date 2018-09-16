@@ -36,13 +36,18 @@ freq <- function(...) {
     var.name <- get_option("last_varname")
     colnames(result) <- c("Freq", "%" , "cum%")
     result <- rbind(result,Total = colSums(result))
-    deci <- c(0,2,2)
+    cdeci <- c(FALSE,TRUE,TRUE)
+    deci <- 1
     result[nrow(result),ncol(result)] <- 100
     title <- paste("Frequency distribution of",getvar())
     names(dimnames(result))  <- c(var.name,title)
-    outputtable(result,deci,tot=FALSE,title)
+
+    outputtable(result,deci,totcol=FALSE,title,coldeci=cdeci )
+
     # missing should be added to result
-    cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+    cat("Missing:",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+
+    # construct of returned list
     r <- list()
     r$table <- result
     r$total <- tot
@@ -80,15 +85,17 @@ freq <- function(...) {
 #' }
 #'
 #'
-epitable <- function(exp,out,row=FALSE,col=FALSE)  {
+epitable <- function(out,exp,row=FALSE,col=FALSE)  {
    r <- as.list(match.call())
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
+   expdata.fname <- getvar()
 
    tot <- length(expdata)
 
    outdata <- getvar(r$out)
    outdata.name <- getvarname()
+   outdata.fname <- getvar()
    # length to be verified
 
    # to get options
@@ -99,33 +106,48 @@ epitable <- function(exp,out,row=FALSE,col=FALSE)  {
 
      # calculations
      r <- table(expdata,outdata,useNA="no")
-     names(dimnames(r))  <- c(expdata.name,outdata.name)
+
      # check size of result table
      bin <- (dim(r)==c(2,2)&&TRUE)
-
-     mis  <- sum(is.na(expdata)|is.na(outdata))
      if (bin) {
        t <- chisq.test(r)
        f <- fisher.test(r)$p.value
      }
-     print(r)
-
+     prop <- NULL
      if (row) {
-       prop <- prop.table(r,1)
+       prop <- round(prop.table(r,1)*100, digits = 2)
        prop <- cbind(prop,100)
-       print(prop)
      }
 
+     m <- margin.table(r,1)
+     r <- cbind(r,Total = m)
+     m <- margin.table(r,2)
+     r <- rbind(r,Total = m)
+
+     # must be done after all structure changes
+     names(dimnames(r))  <- c(expdata.name,outdata.name)
+
+     mis  <- sum(is.na(expdata)|is.na(outdata))
+
+     title <- paste("Tabulation of",outdata.fname,"by",expdata.fname)
+
+     outputtable(r, deci=1, totcol=TRUE, title=title, perc = prop)
+
+     # construct the return list
      result <- list()
      result$table <- r
+     if (row) {
+        result$prop <- prop
+     }
      result$chisq <- t$statistic[[1]]
      result$chisq.p <- t$p.value
      result$fischer <- t$p.value
      result$missing <- mis
 
-     cat(t$statistic,"(", t$p.value,") Fisherexact :",f)
-
-     cat("Missings :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+     # print stat result for interactive mode
+     catret("")
+     catret("Chi2:",t$statistic,"(", t$p.value,") Fisher exact :",f)
+     catret("Missing :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
 
      return(result)
    }
@@ -159,44 +181,61 @@ epitable <- function(exp,out,row=FALSE,col=FALSE)  {
 #' }
 #'
 #'
-epiorder <- function(var,mode="Yesno",custom=NULL) {
+epiorder <- function(var,mode="yesno",custom=NULL) {
   r <- as.list(match.call())
   coldata <- getvar(r$var)
   colname <- getvarname()
   colfullname <- getvar()
   # colname <- as.character(substitute(var))
   if (! is.null(coldata) ) {
-    dfname <- get_option("last_df")
-    df=get(dfname)
-    coldata <- factor(coldata)
-    # test for type of levels  (otherwise calling it two time will erase all values)
-    clevels <- levels(coldata)
-    nlevels <- nlevels(coldata)
-    if (nlevels > 2) {
-       cat("epiorder is only for binary variables (with 2 categories)")
-    } else if (sort(clevels)[1] == "0" ) {
-      clevels <- c("1","0")
-    } else if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
-      clevels <- sort(clevels,decreasing = TRUE)
+    switch( mode ,
+            "yesno" = {
+      lab <- c("Yes","No")
+    } ,
+    "10" = {
+      lab <- c("1","0")
+    } ,
+    "+-" = {
+      lab <- c("+","-")
+    } ,
+    { cat("Mode:",mode," Incorrect. See help(epiorder)")
+      lab <- NULL}
+    )
+    if ( ! is.null(lab) ) {
+      dfname <- get_option("last_df")
+      df=get(dfname)
+      coldata <- factor(coldata)
+      # test for type of levels  (otherwise calling it two time will erase all values)
+      clevels <- levels(coldata)
+      nlevels <- nlevels(coldata)
+      if (nlevels > 2) {
+         cat("epiorder is only for binary variables (with 2 categories)")
+        lab <- NULL
+      } else if (sort(clevels)[1] == "0" ) {
+        clevels <- c(1,0)
+      } else if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
+        clevels <- sort(clevels,decreasing = TRUE)
+      }
     }
-
-    coldata <- factor(coldata, levels = c(1,0) , labels = c("Yes","No"), ordered = TRUE)
   }
 
-  df[,colname] <- coldata
+  if (! is.null(lab)) {
+    coldata <- factor(coldata, levels = c(1,0) , labels = lab, ordered = TRUE)
+    df[,colname] <- coldata
 
-  # assign(dfname,df,inherits = TRUE )
+    # assign(dfname,df,inherits = TRUE )
 
-  push.data(dfname,df)
+    push.data(dfname,df)
 
-  bold(colfullname)
-  normal(" Reordered with labels: ")
-  catret(levels(coldata))
+    bold(colfullname)
+    normal(" Reordered with labels: ")
+    catret(levels(coldata))
 
-  # exp <- paste0(substitute(var),"<- coldata")
-  # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
-  # r
-  # df
+    # exp <- paste0(substitute(var),"<- coldata")
+    # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
+    # r
+    # df
+  }
 }
 
 push.data <- function(dfname,df) {

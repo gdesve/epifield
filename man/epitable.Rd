@@ -4,12 +4,12 @@
 \alias{epitable}
 \title{Cross tabulation ( 2by2 table).}
 \usage{
-epitable(exp, out, row = FALSE, col = FALSE)
+epitable(out, exp, row = FALSE, col = FALSE)
 }
 \arguments{
-\item{exp}{"Exposure" as numbers, factors or text.}
-
 \item{out}{"Outcome" as numbers, factors or text}
+
+\item{exp}{"Exposure" as numbers, factors or text.}
 
 \item{row}{"Row percentages"}
 

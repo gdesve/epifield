@@ -236,19 +236,19 @@ getdf <- function() {
 
 #' @title count number of record / row
 #'
-#' @description Toyal return the number of row sastifying a condition.
+#' @description Count return the number of row sastifying a condition.
 #'
 #' @param expr A logical expression ora data.frame.I f a data.frame is given,
-#' total() return the number of rows. If a logical expression is given, total() return
+#' count() return the number of rows. If a logical expression is given, total() return
 #' the number of records satisfaying the condition
 #'
 #' @return Number of rows macthing expr
 #' @export
 #'
 #' @examples
-#' total(c(1, 2, 3, 1) == 1)
+#' count(c(1, 2, 3, 1) == 1)
 #'
-total <- function(expr) {
+count <- function(expr) {
   # print(as.list(match.call()))
   m <- NA
   if (missing(expr)) {
@@ -356,10 +356,15 @@ catret  <- function(...) {
 lpad <- function(value,
                  width = 11,
                  digit = 0) {
-  r <-
-    format(format(value, nsmall = digit),
-           width = width ,
-           justify = "right")
+  if (is.numeric(value) ) {
+    r <-
+      format(round(value, digits = digit),
+             width = width ,nsmall = digit ,
+             justify = "right")
+  } else {
+    r <-
+      format(value, width = width , justify = "right")
+  }
   if (is.character(value) & (nchar(r) > width)) {
     r <- paste0(substr(r, 1, width - 2), "..")
   }
@@ -540,6 +545,7 @@ add.sep <- function(li,c) {
 #' @details
 #' When keyword or pattern are used and there is more than one object to clear, a confirmation will be issued.
 #' Except if noask parameters is set to true
+#' If there only one object matching the exactly the \code{what} parameter, this object is removed whithout confirmation
 #'
 #' @export
 #' @importFrom utils ls.str
@@ -593,7 +599,7 @@ clear <- function(what, noask = FALSE) {
     l <- length(li)
     if (l > 0) {
       lid <- add.sep(li,"- ")
-      cat(l, " objet(s) to remove :")
+      cat(l, " object(s) to remove :")
       italic(as.character(lid))
       normal("\n")
       if ( ( l == 1 & li[1]==swhat ) ||  noask || ok() ) {
@@ -784,22 +790,27 @@ finddf <- function(varname) {
 
 tab_line <- function(ncol, tot = FALSE) {
   l1 <- replicate(LINE, FIRST + 1)
-  l2 <- replicate(LINE, (ncol - 1) * (COL + 1))
+  l2 <- replicate(LINE, (ncol - 1) * (COL + 2))
   l3 <- ifelse(tot, CROSS, LINE)
-  l4 <- replicate(LINE, COL + 1)
+  l4 <- replicate(LINE, COL )
   cat(l1, CROSS, l2, l3, l4, "\n", sep = "")
 }
 
-tab_row <- function(rname, line, deci, tot = FALSE) {
+tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL) {
   l <- length(line)
+  if (is.null(coldeci)) {coldeci[1:l] <- FALSE}
   cat(lpad(rname, FIRST))
   cat("", SEP)
   for (i in 1:(l - 1)) {
-    cat(lpad(line[i], COL, digit = deci[i]), " ")
+    ndigit <- ifelse(coldeci[i],deci,0)
+    fout <- lpad(line[i], COL, digit = ndigit)
+    cat(fout, " ")
   }
-  if (tot)
-    cat(COL)
-  cat(lpad(line[l], COL, digit = deci[l]))
+  if (tot) {
+    cat(SEP)
+  }
+  ndigit <- ifelse(coldeci[l],deci,0)
+  cat(lpad(line[l], COL, ndigit ))
   cat("\n")
 }
 
@@ -807,8 +818,10 @@ tab_row <- function(rname, line, deci, tot = FALSE) {
 outputtable <-
   function(table,
            deci = NULL,
-           tot = FALSE,
-           title = "Frequency distribution")  {
+           totcol = FALSE,
+           title = "Frequency distribution",
+           perc = NULL,
+           coldeci=NULL)  {
     catret(title)
     catret("")
     ncol <- dim(table)[2]
@@ -816,19 +829,44 @@ outputtable <-
     coln <- colnames(table)
     rown <- rownames(table)
 
-    if (is.null(deci)) {
-      deci[1:nline] <- 0
+    if (is.null(coldeci)) {
+      coldeci[1:ncol] <- FALSE
     }
-    # Les entêtes de colonne
-    tab_row(names(dimnames(table))[1], coln, deci, tot)
-    tab_line(ncol, tot)
+
+    # columns title
+    if (! is.null(names(dimnames(table))[2]) ) {
+      catret(replicate(" ",COL*(ncol/2)+FIRST ), names(dimnames(table))[2])
+    }
+
+    # rows title and columns names
+    tab_row(names(dimnames(table))[1], coln, deci, totcol, coldeci)
+
+    # separator line
+    tab_line(ncol, totcol)
+    if ( ! is.null(perc) ) {
+      colperc<-NULL
+      colperc[1:ncol-1] <- TRUE
+      colperc[ncol] <- FALSE
+    }
+
+    # each row
     for (i in (1:(nline - 1))) {
-      tab_row(rown[i], table[i, ], deci, tot)
+      tab_row(rown[i], table[i, ], deci, totcol,coldeci)
+      if ( ! is.null(perc) ) {
+        tab_row("", perc[i, ], deci, totcol,colperc)
+      }
     }
-    tab_line(ncol, tot)
-    tab_row(rown[nline], table[nline, ], deci, tot)
+
+    # separator line
+    tab_line(ncol, totcol)
+    # Totals row
+    tab_row(rown[nline], table[nline, ], deci, totcol, coldeci)
   }
 
+
+insertrow <- function(DFtoadd, newrow, r) {
+  DFtoadd  <- rbind(DFtoadd[1:r-1], newrow, DFtoadd[-(1:r-1)])
+}
 
 rename <- function(oldname, newname) {
   r <- as.list(match.call())

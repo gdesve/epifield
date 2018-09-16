@@ -21,6 +21,7 @@ It's possible to erase all vars, all functions using keywords : "vars" or "funct
 \details{
 When keyword or pattern are used and there is more than one object to clear, a confirmation will be issued.
 Except if noask parameters is set to true
+If there only one object matching the exactly the \code{what} parameter, this object is removed whithout confirmation
 }
 \examples{
 tmp <- 5
