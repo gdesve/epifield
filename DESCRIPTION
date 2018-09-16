@@ -26,3 +26,4 @@ Collate:
     'freq.R'
     'hello.R'
     'plots.R'
+    'multi.R'

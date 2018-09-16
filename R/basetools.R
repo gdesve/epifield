@@ -304,7 +304,41 @@ count <- function(expr) {
 # r[1] : Error in eval(sum(heu == 2)) : objet 'heu' introuvable
 # substr(expr , heu ) <-  tira$heu
 
+#' Title Drop a data.frame column
+#'
+#' @param varname The name of the column to be dropped
+#'
+#' @return Message to confirm
+#' @export
+#'
+#' @examples
+#'
+dropvar <- function(varname) {
+  r <- as.list(match.call())
 
+  vartodrop <- getvar(r$varname)
+  if (! is.null(vartodrop) ) {
+    vartodropfname <- getvar()
+    df <- getdf()
+    vartodropname <- getvarname()
+    dfname <- get_option("last_df")
+    # ex=parse(text=paste0("df$",vartodropname," <- NULL") )
+    # r <- try(eval(ex) , TRUE)
+    # if (inherits(r, "try-error")) {
+    #   warning("an error occured")
+    #} else {
+
+    # df[,c(var1, var2)]
+    df[,vartodropname] <- NULL
+    cat("Column ")
+    bold(vartodropname)
+    normal(" dropped from ")
+    bold(dfname)
+    catret("")
+    push.data(dfname,df)
+    #}
+  }
+}
 
 
 #' right
@@ -447,6 +481,7 @@ normal <- function(...) {
 read <- function(filename = "", label = NULL) {
   # no file ? choose one
   if (filename == "") {
+    cat("retrieving file tree...please wait.")
     r <- try(filename <- file.choose())
     if (inherits(r, "try-error")) {
       # user have cancelled , stop now
@@ -689,10 +724,13 @@ getvar <- function(what = NULL) {
         varname <- what
       }
     )
-
     # got it, we save the name
     epif_env$last_var <- varname
     epif_env$last_varname <- varname
+    if ( (l <-pos("\\$",varname)) > 0) {
+      epif_env$last_varname <- substring(varname,l+1)
+      epif_env$last_df <- substr(varname,1,l-1)
+    }
 
     # just create an expression with content
     ex <- parse(text=varname)
@@ -868,15 +906,36 @@ insertrow <- function(DFtoadd, newrow, r) {
   DFtoadd  <- rbind(DFtoadd[1:r-1], newrow, DFtoadd[-(1:r-1)])
 }
 
+#' Change the name of a data.frame column
+#'
+#' @param oldname Name of the column/variable to rename
+#' @param newname New name to apply
+#'
+#' @return Message to confirm the change
+#' @export
+#'
+#' @examples
+#' df <- as.data.frame( c(One=1,Two=2) )
+#' rename(Two,Last)
 rename <- function(oldname, newname) {
   r <- as.list(match.call())
   old <- getvar(r$oldname)
-  old.name <- getvarname()
-  df <- getdf()
+  if (! is.null(old) ) {
+    old.fname <- getvar()
+    old.name <- getvarname()
+    dfname <- get_option("last_df")
+    df <- getdf()
 
-  newname <- as.character(substitute(newname))
+    newname <- as.character(substitute(newname))
 
-  names(df) <- sub(old.name, newname, names(df))
+    names(df) <- sub(old.name, newname, names(df))
+    push.data(dfname,df)
+
+    bold(old.fname)
+    normal(" renamed as ")
+    bold(newname)
+    catret("")
+  }
 
 }
 

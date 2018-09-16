@@ -149,7 +149,7 @@ epitable <- function(out,exp,row=FALSE,col=FALSE)  {
      catret("Chi2:",t$statistic,"(", t$p.value,") Fisher exact :",f)
      catret("Missing :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
 
-     return(result)
+     invisible(result)
    }
 }
 
