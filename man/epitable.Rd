@@ -4,7 +4,7 @@
 \alias{epitable}
 \title{Cross tabulation ( 2by2 table).}
 \usage{
-epitable(out, exp, row = FALSE, col = FALSE)
+epitable(out, exp, row = FALSE, col = FALSE, fisher = TRUE)
 }
 \arguments{
 \item{out}{"Outcome" as numbers, factors or text}
@@ -14,6 +14,8 @@ epitable(out, exp, row = FALSE, col = FALSE)
 \item{row}{"Row percentages"}
 
 \item{col}{"Col percentages"}
+
+\item{fisher}{TRUE by default, display the fisher exact probability}
 }
 \value{
 An array containing  values of \code{...}   \code{}

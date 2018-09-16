@@ -14,13 +14,15 @@
 #' @seealso \code{\link{table}} for 2by2 tables
 #' @export
 #' @param ... As numbers, factors or text.
+#' @param missing If false then suppress output of number of missing values
+#' @param quietly No output, only return value
 #' @return An array containing  values of \code{...}   \code{}
+#'
 #' @examples
 #' freq(c(3,1,2,2,5))
 #'
 #'
-
-freq <- function(...) {
+freq <- function(...,missing=TRUE,quietly = FALSE) {
   arg.passed <- substitute(...)
 
   cur.var <- getvar(arg.passed)
@@ -41,12 +43,13 @@ freq <- function(...) {
     result[nrow(result),ncol(result)] <- 100
     title <- paste("Frequency distribution of",getvar())
     names(dimnames(result))  <- c(var.name,title)
-
-    outputtable(result,deci,totcol=FALSE,title,coldeci=cdeci )
-
+    if (! quietly) {
+       outputtable(result,deci,totcol=FALSE,title,coldeci=cdeci )
+    }
     # missing should be added to result
-    cat("Missing:",mis," (",round(mis/tot*100, digits = 2),"%)\n")
-
+    if (missing) {
+      cat("Missing:",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+    }
     # construct of returned list
     r <- list()
     r$table <- result
@@ -78,6 +81,7 @@ freq <- function(...) {
 #' @param out  "Outcome" as numbers, factors or text
 #' @param row  "Row percentages"
 #' @param col  "Col percentages"
+#' @param fisher TRUE by default, display the fisher exact probability
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
 #' \dontrun{
@@ -85,7 +89,7 @@ freq <- function(...) {
 #' }
 #'
 #'
-epitable <- function(out,exp,row=FALSE,col=FALSE)  {
+epitable <- function(out,exp,row=FALSE,col=FALSE,fisher=TRUE)  {
    r <- as.list(match.call())
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
@@ -146,7 +150,11 @@ epitable <- function(out,exp,row=FALSE,col=FALSE)  {
 
      # print stat result for interactive mode
      catret("")
-     catret("Chi2:",t$statistic,"(", t$p.value,") Fisher exact :",f)
+     cat("Chi2:",t$statistic,"(", round(t$p.value,digits = get_option("stat_digits")),")" )
+     if (fisher) {
+        cat(" Fisher exact :",round(f,digits = get_option("stat_digits")))
+     }
+     catret("")
      catret("Missing :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
 
      invisible(result)
@@ -174,7 +182,7 @@ epitable <- function(out,exp,row=FALSE,col=FALSE)  {
 #' @param mode "Yesno"   "Yesno"  "10" "+-"
 #' @param custom  Custom labels
 #'
-#' @return A vector reordered
+#' @return A vector reordered Can be nested as in \code{freq(epioredr(case))}
 #' @examples
 #' \dontrun{
 #' epiorder(c(0,1,0,1,1))
@@ -231,6 +239,7 @@ epiorder <- function(var,mode="yesno",custom=NULL) {
     normal(" Reordered with labels: ")
     catret(levels(coldata))
 
+    invisible(coldata)
     # exp <- paste0(substitute(var),"<- coldata")
     # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
     # r

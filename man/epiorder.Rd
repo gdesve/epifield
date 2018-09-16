@@ -14,7 +14,7 @@ epiorder(var, mode = "yesno", custom = NULL)
 \item{custom}{Custom labels}
 }
 \value{
-A vector reordered
+A vector reordered Can be nested as in \code{freq(epioredr(case))}
 }
 \description{
 \code{epiorder} Rearrange order of factor variable to produce classical epi table

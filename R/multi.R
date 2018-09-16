@@ -15,11 +15,13 @@
 #'
 #' @param outvar As numbers, factors or text. Represent the outcome
 #' @param expvar As character : model to be tested as var1 + var2 + var3
+#' @param quietly If TRUE, supress direct output
+#' @param full For full output
 #' @return An array containing  resulting summary
 #' #' @examples
 #' logreg()
 #'
-logreg <- function(outvar,expvar) {
+logreg <- function(outvar,expvar, full= FALSE,quietly=FALSE) {
   r <- as.list(match.call())
   outval <- getvar(r$outvar)
   outvar <- getvarname()
@@ -31,10 +33,28 @@ logreg <- function(outvar,expvar) {
 
   df <- getdf()
   form <- paste0("glm(", outvar," ~ ",expvarlist, ", data = df, family = binomial(logit))")
-
+  if (get_option("show_Rcode")) {
+    catret(form)
+  }
   reg <- eval(parse(text=form) )
 
   # reg <- glm(sport ~ , data = df, family = binomial(logit))
-  summary(reg)
+  if (!quietly) {
+    if (full) {
+      print(summary(reg))
+    } else {
+      print(reg$call)
+    }
 
+    catret("Odds ratio with CI")
+    r <- exp(cbind(coef(reg), confint(reg)))
+    dimnames(r) <- list(dimnames(r)[[1]],c("Odds ratio","LCI","UCI"))
+    r2=round(r,digits=get_option("stat_digits"))
+    print(r2)
+  }
+  result <- list()
+  result$call <- reg$call
+  result$or <- r
+  names(dimnames(result)) <- c("","Odds ratio with CI")
+  invisible(result)
 }

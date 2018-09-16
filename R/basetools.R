@@ -79,6 +79,8 @@ epif_env <- new.env(parent = emptyenv())
 
 epif_env$start <- 1
 epif_env$end <- 2
+epif_env$stat_digits <- 4
+epif_env$show_Rcode <- FALSE
 
 SEP   <- "|"
 CROSS <- "+"
@@ -277,9 +279,11 @@ count <- function(expr) {
     if (is.data.frame(expr)) {
       # we return number of row
       r <- dim.data.frame(expr)[[1]]
-    } else {
+    } else if (is.logical(expr) ) {
       # ... dont't change anything
       r <- sum(expr, na.rm = TRUE)
+    } else {
+      r <- length(expr)
     }
   }
   if (!is.na(m)) {

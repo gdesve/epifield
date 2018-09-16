@@ -4,10 +4,14 @@
 \alias{freq}
 \title{Frequency distribution.}
 \usage{
-freq(...)
+freq(..., missing = TRUE, quietly = FALSE)
 }
 \arguments{
 \item{...}{As numbers, factors or text.}
+
+\item{missing}{If false then suppress output of number of missing values}
+
+\item{quietly}{No output, only return value}
 }
 \value{
 An array containing  values of \code{...}   \code{}

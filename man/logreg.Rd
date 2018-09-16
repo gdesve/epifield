@@ -4,12 +4,16 @@
 \alias{logreg}
 \title{logreg}
 \usage{
-logreg(outvar, expvar)
+logreg(outvar, expvar, full = FALSE, quietly = FALSE)
 }
 \arguments{
 \item{outvar}{As numbers, factors or text. Represent the outcome}
 
 \item{expvar}{As character : model to be tested as var1 + var2 + var3}
+
+\item{full}{For full output}
+
+\item{quietly}{If TRUE, supress direct output}
 }
 \value{
 An array containing  resulting summary
