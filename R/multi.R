@@ -35,6 +35,6 @@ logreg <- function(outvar,expvar) {
   reg <- eval(parse(text=form) )
 
   # reg <- glm(sport ~ , data = df, family = binomial(logit))
-  reg
+  summary(reg)
 
 }
