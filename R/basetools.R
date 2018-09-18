@@ -81,6 +81,7 @@ epif_env$start <- 1
 epif_env$end <- 2
 epif_env$stat_digits <- 4
 epif_env$show_Rcode <- FALSE
+epif_env$select <- ""
 
 SEP   <- "|"
 CROSS <- "+"
@@ -248,9 +249,9 @@ getdf <- function() {
 #' @export
 #'
 #' @examples
-#' count(c(1, 2, 3, 1) == 1)
+#' countif(c(1, 2, 3, 1) == 1)
 #'
-count <- function(expr) {
+countif <- function(expr) {
   # print(as.list(match.call()))
   m <- NA
   if (missing(expr)) {
@@ -277,12 +278,13 @@ count <- function(expr) {
   } else {
     # formula is correct, is it a data frame ?
     if (is.data.frame(expr)) {
-      # we return number of row
+      # we return number of row of the data.frame
       r <- dim.data.frame(expr)[[1]]
     } else if (is.logical(expr) ) {
-      # ... dont't change anything
+      # ... dont't change anything and return sum of TRUE
       r <- sum(expr, na.rm = TRUE)
     } else {
+      # it's a vector, we return it's length
       r <- length(expr)
     }
   }
@@ -292,13 +294,14 @@ count <- function(expr) {
     pos <- regexpr("object '(\\w+)' not found", m )[1]
     normal(substring(m, pos ))
     cat("Considere to set the default data.frame using ")
-    bold("setdata(dataname)")
+    bold("setdata(name of data.frame)")
     normal("\n")
   }
-  r
-  # if (is.logical(expr) ) print(TRUE)
-}
 
+  # the number of records found
+  r
+
+}
 # Another possibility would be to complete expr with getdf automatically by looking for object
 # avec un regexpr type
 #  r <- regexpr("object '(\\w+)' not found", r[1],perl=TRUE)
@@ -307,6 +310,47 @@ count <- function(expr) {
 # r<-try(eval(sum(heu == 2)))
 # r[1] : Error in eval(sum(heu == 2)) : objet 'heu' introuvable
 # substr(expr , heu ) <-  tira$heu
+
+
+#' @title generate a new variable
+#'
+#' @description Generate a new variable into the default data.frame.
+#' Default data.frame must be set using sedata(df)
+#' @param name Name of the new variable/column
+#' @param value The value to assign to the new variable
+#' if it's a logical expression. The new variable will contain TRUE or FALSE
+#' according to the evaluation of the logical expression for each row
+#' The new variable is added to the original dataset.
+#'
+#' @return The new variable
+#' @export
+#'
+#' @examples
+#' generate("test", "age/10")
+#'
+generate <- function(name, value) {
+  dfname <- get_option("dataset")
+  df <- getdata()  # epif_env$dataset
+  name <- as.character(substitute(name))
+  if (is.data.frame(df)) {
+    # we evaluate the "value" in that environnement
+    ex <- substitute(value)
+    m <- NA
+    r <- try(eval(ex, df, parent.frame()) , TRUE)
+    if (inherits(r, "try-error")) {
+      # still an error we report them
+      m <- r[[1]]
+      r <- NA
+    } else {
+      df[,name] <- r
+      push.data(dfname,df)
+    }
+  } else {
+    cat("To use generate, you should first set the default data.frame with sedata()")
+  }
+  r
+}
+
 
 #' Title Drop a data.frame column
 #'
@@ -322,28 +366,73 @@ dropvar <- function(varname) {
 
   vartodrop <- getvar(r$varname)
   if (! is.null(vartodrop) ) {
-    vartodropfname <- getvar()
+    # we collecte the data.frame and infos
     df <- getdf()
     vartodropname <- getvarname()
     dfname <- get_option("last_df")
-    # ex=parse(text=paste0("df$",vartodropname," <- NULL") )
-    # r <- try(eval(ex) , TRUE)
-    # if (inherits(r, "try-error")) {
-    #   warning("an error occured")
-    #} else {
 
-    # df[,c(var1, var2)]
+    # we drop from df copy
     df[,vartodropname] <- NULL
+
+    # feedback for user
     cat("Column ")
     bold(vartodropname)
     normal(" dropped from ")
     bold(dfname)
     catret("")
+
+    # update original data.frame
     push.data(dfname,df)
-    #}
+
   }
 }
 
+#' Title select part of a data.frame
+#'
+#' @param expr
+#'
+#' @return the selected vector
+#' @export
+#'
+select <- function(expr) {
+  sl <- get_option("select")
+  dfname <- get_option("dataset")
+  if (missing(expr) & ! (sl =="") ) {
+    load("epifield.tmp", envir = .GlobalEnv)
+    set_option("select","")
+    n <- nrow(getdata())
+    cat("Selection cleared for", dfname, " :",n,"rows" )
+  } else if (missing(expr)) {
+    cat("No current selection to restore for",dfname)
+  }
+  if ( ! missing(expr) ) {
+    ex <- substitute(expr)
+    df <- getdata()
+    dfname <- get_option("dataset")
+    sl <- get_option("select")
+    cursel <- deparse(ex)
+    if (sl=="") {
+      sl <- cursel
+      save(list=c(dfname), file="epifield.tmp", envir = .GlobalEnv)
+    } else {
+      sl <- paste(sl, "&" , cursel)
+    }
+    set_option("select",sl)
+    m <- NA
+    r <- try(eval(ex, df, parent.frame()) , TRUE)
+    if (inherits(r, "try-error")) {
+      # still an error we report them
+      m <- r[[1]]
+      r <- NA
+    } else {
+      sdf <- df[r,]
+      n <- nrow(sdf)
+      push.data(dfname,sdf)
+      cat(dfname,"rows selected :", sl , "(",n,"rows)" )
+      invisible(sdf)
+    }
+  }
+}
 
 #' right
 #'

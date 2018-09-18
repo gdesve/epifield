@@ -206,6 +206,9 @@ epiorder <- function(var,mode="yesno",custom=NULL) {
     "+-" = {
       lab <- c("+","-")
     } ,
+    "truefalse" = {
+      lab <- c("TRUE","FALSE")
+    } ,
     { cat("Mode:",mode," Incorrect. See help(epiorder)")
       lab <- NULL}
     )
@@ -221,14 +224,14 @@ epiorder <- function(var,mode="yesno",custom=NULL) {
         lab <- NULL
       } else if (sort(clevels)[1] == "0" ) {
         clevels <- c(1,0)
-      } else if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
+      } else {  #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
         clevels <- sort(clevels,decreasing = TRUE)
       }
     }
   }
 
   if (! is.null(lab)) {
-    coldata <- factor(coldata, levels = c(1,0) , labels = lab, ordered = TRUE)
+    coldata <- factor(coldata, levels = clevels , labels = lab, ordered = TRUE)
     df[,colname] <- coldata
 
     # assign(dfname,df,inherits = TRUE )
