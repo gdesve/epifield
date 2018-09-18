@@ -332,6 +332,7 @@ generate <- function(name, value) {
   dfname <- get_option("dataset")
   df <- getdata()  # epif_env$dataset
   name <- as.character(substitute(name))
+  r <- NULL
   if (is.data.frame(df)) {
     # we evaluate the "value" in that environnement
     ex <- substitute(value)
@@ -360,7 +361,7 @@ generate <- function(name, value) {
 #' @export
 #'
 #' @examples
-#'
+#' dropvar(dumepivar)
 dropvar <- function(varname) {
   r <- as.list(match.call())
 
@@ -389,7 +390,7 @@ dropvar <- function(varname) {
 
 #' Title select part of a data.frame
 #'
-#' @param expr
+#' @param expr A logical condition applied to data.frame in order to select rows
 #'
 #' @return the selected vector
 #' @export
@@ -399,6 +400,7 @@ select <- function(expr) {
   dfname <- get_option("dataset")
   if (missing(expr) & ! (sl =="") ) {
     load("epifield.tmp", envir = .GlobalEnv)
+    file.remove("epifield.tmp")
     set_option("select","")
     n <- nrow(getdata())
     cat("Selection cleared for", dfname, " :",n,"rows" )

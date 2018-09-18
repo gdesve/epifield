@@ -7,7 +7,7 @@
 select(expr)
 }
 \arguments{
-\item{expr}{}
+\item{expr}{A logical condition applied to data.frame in order to select rows}
 }
 \value{
 the selected vector

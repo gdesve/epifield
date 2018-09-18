@@ -16,5 +16,5 @@ Message to confirm
 Title Drop a data.frame column
 }
 \examples{
-
+dropvar(dumepivar)
 }

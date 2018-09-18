@@ -10,7 +10,7 @@
 #' @author Gilles Desve
 #' @references Based on: \emph{Epi6} and \emph{Stata} functionnality,
 #' available at \url{https://github.com/}.
-#'
+#' @importFrom stats coef confint
 #' @export
 #'
 #' @param outvar As numbers, factors or text. Represent the outcome
