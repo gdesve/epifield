@@ -27,3 +27,4 @@ Collate:
     'hello.R'
     'plots.R'
     'multi.R'
+    'dataman.R'
