@@ -283,9 +283,11 @@ countif <- function(expr) {
     } else if (is.logical(expr) ) {
       # ... dont't change anything and return sum of TRUE
       r <- sum(expr, na.rm = TRUE)
-    } else {
+    } else if (length(expr) > 1) {
       # it's a vector, we return it's length
       r <- length(expr)
+    } else {
+      r
     }
   }
   if (!is.na(m)) {
@@ -782,8 +784,18 @@ is.var <- function(what="") {
 getvarname <- function()  { return(get_option("last_varname")) }
 
 
+# internal function to retrieve dataset variables
+
+#' @title retrieve a data.frame column
+#'
+#' @param what Name of the column
+#'
+#' @return The column
+#' @export
 #' @importFrom utils glob2rx
-#internal function to retrieve dataset variables
+#'
+#' @examples
+#' getvar()
 getvar <- function(what = NULL) {
 
   # first, if what is missing we return previous one
@@ -804,6 +816,10 @@ getvar <- function(what = NULL) {
     resetvar()
 
     # Look at type of argument and get a working version of it
+    r <- try(mwhat <- mode(what),TRUE)
+    if (inherits(r, "try-error")) {
+       what <- substitute(what)
+    }
     mwhat <- mode(what)
     switch(mwhat ,
       "character" = {
