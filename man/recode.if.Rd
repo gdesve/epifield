@@ -4,21 +4,21 @@
 \alias{recode.if}
 \title{Title recode a var if a condition if true}
 \usage{
-recode.if(var, value, condition)
+recode.if(xvar, condition, newvalue)
 }
 \arguments{
+\item{condition}{Logical expression to select value to be recoded}
+
+\item{newvalue}{The value to replace}
+
 \item{var}{The vector or data.frame column to recode}
-
-\item{value}{The value to assign}
-
-\item{condition}{If the condition is verified}
 }
 \value{
-The recode variable
+The recoded variable
 }
 \description{
 Title recode a var if a condition if true
 }
 \examples{
-recode.if(age, "young", age < 18)
+recode.if(age, age > 100, 100)
 }

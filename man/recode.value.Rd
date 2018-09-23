@@ -4,14 +4,14 @@
 \alias{recode.value}
 \title{Title recode a var if a condition if true}
 \usage{
-recode.value(var, oldvalue, newvalue)
+recode.value(xvar, oldvalue, newvalue)
 }
 \arguments{
+\item{oldvalue}{The value to replace}
+
+\item{newvalue}{The value to assign}
+
 \item{var}{The vector or data.frame column to recode}
-
-\item{oldvalue}{The value to assign}
-
-\item{newvalue}{The value to replace}
 }
 \value{
 The recode variable
@@ -20,5 +20,5 @@ The recode variable
 Title recode a var if a condition if true
 }
 \examples{
-recode.value(case, "Oui", 1)
+recode.if(age, "Unknow", NA)
 }

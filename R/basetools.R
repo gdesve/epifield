@@ -82,6 +82,7 @@ epif_env$end <- 2
 epif_env$stat_digits <- 4
 epif_env$show_Rcode <- FALSE
 epif_env$select <- ""
+epif_env$last_error <- NA
 
 SEP   <- "|"
 CROSS <- "+"
@@ -93,7 +94,10 @@ resetvar <- function() {
   epif_env$last_var <- ""
   epif_env$last_varname <- ""
   epif_env$last_df <- ""
+  epif_env$last_error <- NA
 }
+
+getvarname <- function()  { return(get_option("last_varname")) }
 
 #' get_option
 #'
@@ -119,6 +123,14 @@ get_option <- function(op) {
     # warning("Option unavailable")
     r <- ""
   }
+}
+
+last_error <- function(mess="")  {
+  lm <- get_option("last_error")
+  if (! missing(mess)) {
+    set_option("last_error",mess)
+  }
+  lm
 }
 
 #' list_option
@@ -255,41 +267,68 @@ countif <- function(expr) {
   # print(as.list(match.call()))
   m <- NA
   if (missing(expr)) {
-    expr <- getdata()  # epif_env$dataset
-  }
-  r <- try(eval(expr), TRUE)
-  if (inherits(r, "try-error")) {
-    # it's not a correct formula ... we store the error
-    m <- r[[1]]
-    r <- NA
-    # and try to do better by evaluating in the context of current dataset
-    call <- as.call(list(sum, substitute(expr), na.rm = TRUE))
-    env <- getdata()  # epif_env$dataset
-    if (is.data.frame(env)) {
-      # we evaluate the "sum" in that environnement
-      m <- NA
-      r <- try(eval(call, env, parent.frame()) , TRUE)
-      if (inherits(r, "try-error")) {
-        # still an error we report them
-        m <- r[[1]]
-        r <- NA
-      }
-    }
+    rex <- getdata()  # epif_env$dataset
   } else {
-    # formula is correct, is it a data frame ?
-    if (is.data.frame(expr)) {
-      # we return number of row of the data.frame
-      r <- dim.data.frame(expr)[[1]]
-    } else if (is.logical(expr) ) {
-      # ... dont't change anything and return sum of TRUE
-      r <- sum(expr, na.rm = TRUE)
-    } else if (length(expr) > 1) {
-      # it's a vector, we return it's length
-      r <- length(expr)
-    } else {
-      r
-    }
+    rex <- eval_expr(substitute(expr))
   }
+
+  # formula is correct, is it a data frame ?
+  if (is.data.frame(rex)) {
+    # we return number of row of the data.frame
+    r <- dim.data.frame(rex)[[1]]
+  } else if (is.logical(rex) ) {
+    if (length(rex) == 1) {
+       if (is.na(rex)) {
+          r <- NA
+       } else {
+         r <- sum(rex, na.rm = TRUE)
+       }
+    } else {
+      # ... dont't change anything and return sum of TRUE
+      r <- sum(rex, na.rm = TRUE)
+    }
+  } else if (length(rex) > 1) {
+    # it's a vector, we return it's length
+    r <- length(rex)
+  } else {
+    r <- rex
+  }
+
+
+  # r <- try(eval(expr), TRUE)
+  # if (inherits(r, "try-error")) {
+  #   # it's not a correct formula ... we store the error
+  #   m <- r[[1]]
+  #   r <- NA
+  #   # and try to do better by evaluating in the context of current dataset
+  #   call <- as.call(list(sum, substitute(expr), na.rm = TRUE))
+  #   env <- getdata()  # epif_env$dataset
+  #   if (is.data.frame(env)) {
+  #     # we evaluate the "sum" in that environnement
+  #     m <- NA
+  #     r <- try(eval(call, env, parent.frame()) , TRUE)
+  #     if (inherits(r, "try-error")) {
+  #       # still an error we report them
+  #       m <- r[[1]]
+  #       r <- NA
+  #     }
+  #   }
+  # } else {
+  #   # formula is correct, is it a data frame ?
+  #   if (is.data.frame(expr)) {
+  #     # we return number of row of the data.frame
+  #     r <- dim.data.frame(expr)[[1]]
+  #   } else if (is.logical(expr) ) {
+  #     # ... dont't change anything and return sum of TRUE
+  #     r <- sum(expr, na.rm = TRUE)
+  #   } else if (length(expr) > 1) {
+  #     # it's a vector, we return it's length
+  #     r <- length(expr)
+  #   } else {
+  #     r
+  #   }
+  # }
+  m <- last_error()
   if (!is.na(m)) {
     # should look for different error ... (not found ) / ( $ operator is invalid : "" are missing)
     red("Error :")
@@ -301,6 +340,7 @@ countif <- function(expr) {
   }
 
   # the number of records found
+  # we can't test NA because warning if length > 1 ...
   r
 
 }
@@ -781,7 +821,6 @@ is.var <- function(what="") {
 }
 
 
-getvarname <- function()  { return(get_option("last_varname")) }
 
 
 # internal function to retrieve dataset variables
@@ -868,6 +907,7 @@ getvar <- function(what = NULL) {
         if ( ! mode(r) == "function" ) {
           return(r)
         } else {
+          #  in that situation we can look for column name... to be modified
           warning(
             paste(
               varname ,

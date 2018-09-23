@@ -24,7 +24,7 @@ test_that("Count complex logic for data.frame", {
 
 test_that("Count produce length for vector", {
   vtest <- c(1,1,3,2)
-  expect_equal(countif(vtest),4)
+  expect_equal(countif(c(1,1,3,2)),4)
 })
 
 test_that("Count produce nb of selected rows for logical", {
