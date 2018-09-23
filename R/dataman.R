@@ -15,7 +15,7 @@
 
 #' Title recode a var if a condition if true
 #'
-#' @param var The vector or data.frame column to recode
+#' @param xvar The vector or data.frame column to recode
 #' @param oldvalue The value to replace
 #' @param newvalue The value to assign
 #'
@@ -28,17 +28,36 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
   r <- as.list(match.call())
   vartorec <- getvar(r$xvar)
   vartorecname <- getvarname()
-  oldv <- deparse(r$oldvalue)
-  # test dfname or use error result to find it
-  condtext <- paste0(vartorecname,"==",oldv)
-#  vartorecname <- deparse(vartorecname)
-  # this part is specific to recode value ...
-  ifexpr <- paste0("recode.if(",vartorecname,",",condtext,",",newvalue,")")
-  r <- eval(parse(text=ifexpr) )
-    # recode.if(vartorecname,condtext, newvalue)
-  r
-  # df <- getdf()
-  # dfname <- get_option("last_df")
+
+  if ( is.factor(vartorec) ) {
+    # we change only the labels...
+    df <- getdf()
+    dfname <- get_option("last_df")
+    nl <- nlevels(vartorec)
+    lev = levels(vartorec)
+    for (i in 1:nl) {
+      if (lev[[i]]==oldvalue) {
+        lev[i] <- newvalue
+      }
+    }
+    recoded <- TRUE
+    levels(vartorec) <- lev
+    df[,vartorecname] <- vartorec
+    push.data(dfname,df)
+    vartorec
+  } else {
+    oldv <- deparse(r$oldvalue)
+    # test dfname or use error result to find it
+    condtext <- paste0(vartorecname,"==",oldv)
+  #  vartorecname <- deparse(vartorecname)
+    # this part is specific to recode value ...
+    ifexpr <- paste0("recode.if(",vartorecname,",",condtext,",",newvalue,")")
+    r <- eval(parse(text=ifexpr) )
+      # recode.if(vartorecname,condtext, newvalue)
+    r
+  }
+}
+
   # recoded <- FALSE
   # # test dfname or use error result to find it
   #
@@ -73,30 +92,12 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
   #   push.data(dfname,df)
   # }
   # invisible(df[,vartorecname])
-}
-
-#
-# if ( is.factor(vartorec) ) {
-#   # we change only the labels...
-#   nl <- nlevels(vartorec)
-#   lev = levels(vartorec)
-#   for (i in 1:nl) {
-#     if (lev[[i]]==oldvalue) {
-#       lev[i] <- newvalue
-#     }
-#   }
-#   recoded <- TRUE
-#   levels(vartorec) <- lev
-#   df[,vartorecname] <- vartorec
-# } else {
-#
-
 
 
 
 #' Title recode a var if a condition if true
 #'
-#' @param var The vector or data.frame column to recode
+#' @param xvar The vector or data.frame column to recode
 #' @param condition Logical expression to select value to be recoded
 #' @param newvalue The value to replace
 #'
@@ -227,5 +228,32 @@ eval_expr <- function(expr,env)  {
   # }
   # we return the result
   r
+}
+
+#' Title  List data.frame column
+#'
+#' @param df A data.frame
+#'
+#' @return Structure of data.frame column
+#' @export
+#'
+#' @examples
+#' describe(test)
+describe <- function(df) {
+  r1 <- colnames(df)
+  ldf <- length(r1)
+  r2 <- sapply(df,class)
+  r3 <- attr(df,"var.labels")
+  if (is.null(r3)) {
+    r3 <- vector("character",length = ldf)
+  }
+  r4 <- sapply(df,levels)
+  r5 <- vector("character",length = ldf)
+  for (i in 1:ldf) {
+    r5[i] <- paste(r4[[i]],sep = " ",collapse= ",")
+  }
+  r <- cbind(name=r1,type=r2,desc=r3,labels=r5)
+  r
+
 }
 

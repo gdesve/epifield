@@ -7,11 +7,11 @@
 recode.value(xvar, oldvalue, newvalue)
 }
 \arguments{
+\item{xvar}{The vector or data.frame column to recode}
+
 \item{oldvalue}{The value to replace}
 
 \item{newvalue}{The value to assign}
-
-\item{var}{The vector or data.frame column to recode}
 }
 \value{
 The recode variable

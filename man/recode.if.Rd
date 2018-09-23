@@ -7,11 +7,11 @@
 recode.if(xvar, condition, newvalue)
 }
 \arguments{
+\item{xvar}{The vector or data.frame column to recode}
+
 \item{condition}{Logical expression to select value to be recoded}
 
 \item{newvalue}{The value to replace}
-
-\item{var}{The vector or data.frame column to recode}
 }
 \value{
 The recoded variable
