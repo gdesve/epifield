@@ -250,7 +250,7 @@ describe <- function(df) {
   r4 <- sapply(df,levels)
   r5 <- vector("character",length = ldf)
   for (i in 1:ldf) {
-    # toString to be tested
+    # toString to be tested ...
     r5[i] <- paste(r4[[i]],sep = " ",collapse= ",")
   }
   r <- cbind(name=r1,type=r2,desc=r3,labels=r5)
