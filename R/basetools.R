@@ -74,7 +74,7 @@
 #' @source  Epiet case study
 "test"
 
-
+# global for epifield env to manage epifield options
 epif_env <- new.env(parent = emptyenv())
 
 epif_env$start <- 1
@@ -84,12 +84,14 @@ epif_env$show_Rcode <- FALSE
 epif_env$select <- ""
 epif_env$last_error <- NA
 
+# constant used in tools
 SEP   <- "|"
 CROSS <- "+"
 LINE  <- "-"
 FIRST <- 12
 COL   <- 8
 
+# internal used to reset the getvar system
 resetvar <- function() {
   epif_env$last_var <- ""
   epif_env$last_varname <- ""
@@ -125,6 +127,7 @@ get_option <- function(op) {
   }
 }
 
+# to retrieve last_error from getvar system
 last_error <- function(mess="")  {
   lm <- get_option("last_error")
   if (! missing(mess)) {
@@ -153,7 +156,7 @@ list_option <- function() ls(envir = epif_env)
 #' @param op name of the option to assign
 #' @param value The value to be assigned to option
 #' @export
-#' @return  option value
+#' @return  The previous option value before new assignment
 #' @examples
 #' set_option("option",1)
 #'
@@ -176,13 +179,16 @@ set_option <- function(op, value) {
   invisible(old)
 }
 
-#' setdata
+#' @title set or retrieve the default data.frame
 #'
-#' assign a data.frame as default dataframe
+#' Set a data.frame as default data.frame for epifield function. This avoid typing
+#' and simplify syntax for R newcomers. setdata is mandatory for some functions :
+#' generate, countif
+#' If missing df name, then setdata() return the current data.frame name
 #'
-#' @param df name of the dataframe to assign
+#' @param df Name of the data.frame to set as default
 #' @export
-#' @return  current df name
+#' @return  The current data.frame name
 #' @examples
 #' df <-as.data.frame(c(1,2))
 #' setdata(df)
@@ -211,14 +217,14 @@ setdata <- function(df = NULL) {
   # pour finir verifier que df fait bien partie de l'environnement
 }
 
+# retrieve the default data.frame defined by setdata
 getdata <- function() {
-
   df <- get_option("dataset")  # epif_env$dataset
-
   if ( is.character(df) ) {
     if (! df == "") {
       # dataset contain name ... then get the data.frame
-      df <- eval(parse(text = df))
+      df <- get(df)
+      # df <- eval(parse(text = df))
     }
   }
   # we verify that we finally have a dataframe
@@ -228,7 +234,7 @@ getdata <- function() {
   df
 }
 
-
+# retrieve the last data.frame found for last call to getvar system
 getdf <- function() {
 
   df <- get_option("last_df")  # epif_env$last_df
@@ -236,8 +242,8 @@ getdf <- function() {
   if ( is.character(df) ) {
     if (! df == "") {
       # dataset contain name ... then get the data.frame
-      # df <- get(df) ?
-      df <- eval(parse(text = df))
+      df <- get(df)
+      # df <- eval(parse(text = df))
     }
   }
   # we verify that we finally have a dataframe
@@ -253,11 +259,13 @@ getdf <- function() {
 #'
 #' @description Count return the number of row sastifying a condition.
 #'
-#' @param expr A logical expression ora data.frame.I f a data.frame is given,
-#' count() return the number of rows. If a logical expression is given, total() return
+#' @param expr A logical expression ora data.frame. If a data.frame or a vector is given,
+#' countif() return the number of rows. If a logical expression is given, countif() return
 #' the number of records satisfaying the condition
+#' If a logical expression is given, the expression can use short column names (variable names)
+#' as long as the default data.frame has been selected using setdata(thedataframe)
 #'
-#' @return Number of rows macthing expr
+#' @return Number of rows macthing the expression
 #' @export
 #'
 #' @examples
@@ -293,7 +301,6 @@ countif <- function(expr) {
   } else {
     r <- rex
   }
-
 
   # r <- try(eval(expr), TRUE)
   # if (inherits(r, "try-error")) {
@@ -344,6 +351,7 @@ countif <- function(expr) {
   r
 
 }
+
 # Another possibility would be to complete expr with getdf automatically by looking for object
 # avec un regexpr type
 #  r <- regexpr("object '(\\w+)' not found", r[1],perl=TRUE)
@@ -357,9 +365,10 @@ countif <- function(expr) {
 #' @title generate a new variable
 #'
 #' @description Generate a new variable into the default data.frame.
-#' Default data.frame must be set using sedata(df)
-#' @param name Name of the new variable/column
-#' @param value The value to assign to the new variable
+#' Default data.frame must be set using sedata(df) prior to use generate.
+#'
+#' @param name Name of the new variable/column to create
+#' @param value The value to assign to the new variable.
 #' if it's a logical expression. The new variable will contain TRUE or FALSE
 #' according to the evaluation of the logical expression for each row
 #' The new variable is added to the original dataset.
@@ -596,11 +605,17 @@ normal <- function(...) {
 
 
 
-#'  read
+#'  @title Read a data.frame from disk into memory
 #'
-#'  read a data.frame.
+#'  Read a file of various format and return a data.frame.
 #'  The function try to identify the file structure in order to call the appropriate specific
 #'  command
+#'  Currently accepted extension are : csv, dta, rec, rda
+#'
+#'  For csv files the first line is analysed to identify the separator.
+#'  Accepted separator are  ,  or  ;
+#'
+#'  @return  The data.frame is returned (and should be assign to a variable)
 #'
 #' @export
 #' @importFrom foreign read.dta
@@ -614,11 +629,10 @@ normal <- function(...) {
 #' unlink(fil) # tidy up
 #'
 
-
 read <- function(filename = "", label = NULL) {
   # no file ? choose one
   if (filename == "") {
-    cat("retrieving file tree...please wait.")
+    catret("retrieving file tree...please wait.")
     r <- try(filename <- file.choose())
     if (inherits(r, "try-error")) {
       # user have cancelled , stop now
@@ -626,8 +640,7 @@ read <- function(filename = "", label = NULL) {
     }
   }
   # try to extract name...
-  s <- filename
-  ext <- file.ext(filename)
+  ext <- tolower(file.ext(filename))
   name <- file.name(filename)
   if (file.exists(filename)) {
     # file exists.. let's go
@@ -637,12 +650,15 @@ read <- function(filename = "", label = NULL) {
       test <- readLines(filename , n = 2)
       comma1 <- charcount(",", test[1])
       semicol1 <- charcount(";", test[1])
-      comma2 <- charcount(",", test[2])
-      semicol2 <- charcount(";", test[2])
       if (comma1 > 0) {
         df <- utils::read.csv(filename)
       } else if (semicol1  > 0) {
         df <- utils::read.csv2(filename)
+      } else {
+        red("Separator not identified in :")
+        normal("\n")
+        catret(test[[1]])
+        catret(test[[2]])
       }
     } else  if (ext == "dta") {
       # foreign packages is required
@@ -658,6 +674,10 @@ read <- function(filename = "", label = NULL) {
         message("Package foreign required")
       }
       df <- foreign::read.epiinfo(filename)
+    } else if (ext == "rda") {
+      # load return name and load content into selected env
+      df <- load(filename)
+      df <- get(df)
     } else {
       cat("Extension '", ext, "'not found")
     }

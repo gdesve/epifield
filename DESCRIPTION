@@ -28,3 +28,4 @@ Collate:
     'plots.R'
     'multi.R'
     'dataman.R'
+    'stats.R'

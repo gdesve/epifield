@@ -7,9 +7,9 @@
 generate(name, value)
 }
 \arguments{
-\item{name}{Name of the new variable/column}
+\item{name}{Name of the new variable/column to create}
 
-\item{value}{The value to assign to the new variable
+\item{value}{The value to assign to the new variable.
 if it's a logical expression. The new variable will contain TRUE or FALSE
 according to the evaluation of the logical expression for each row
 The new variable is added to the original dataset.}
@@ -19,7 +19,7 @@ The new variable
 }
 \description{
 Generate a new variable into the default data.frame.
-Default data.frame must be set using sedata(df)
+Default data.frame must be set using sedata(df) prior to use generate.
 }
 \examples{
 generate("test", "age/10")

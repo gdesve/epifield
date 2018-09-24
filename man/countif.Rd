@@ -7,12 +7,14 @@
 countif(expr)
 }
 \arguments{
-\item{expr}{A logical expression ora data.frame.I f a data.frame is given,
-count() return the number of rows. If a logical expression is given, total() return
-the number of records satisfaying the condition}
+\item{expr}{A logical expression ora data.frame. If a data.frame or a vector is given,
+countif() return the number of rows. If a logical expression is given, countif() return
+the number of records satisfaying the condition
+If a logical expression is given, the expression can use short column names (variable names)
+as long as the default data.frame has been selected using setdata(thedataframe)}
 }
 \value{
-Number of rows macthing expr
+Number of rows macthing the expression
 }
 \description{
 Count return the number of row sastifying a condition.

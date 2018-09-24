@@ -230,7 +230,7 @@ eval_expr <- function(expr,env)  {
   r
 }
 
-#' Title  List data.frame column
+#' @title  List data.frame column
 #'
 #' @param df A data.frame
 #'
@@ -240,6 +240,13 @@ eval_expr <- function(expr,env)  {
 #' @examples
 #' describe(test)
 describe <- function(df) {
+  fileatt <- dim(df)
+  dfn <- substitute(df)
+  catret(fileatt[1],
+      "Observations of ",
+      fileatt[2],
+      " variables. Use str(",dfn,") for details")
+
   r1 <- colnames(df)
   ldf <- length(r1)
   r2 <- sapply(df,class)
@@ -257,4 +264,45 @@ describe <- function(df) {
   r
 
 }
+
+#' @title  List head of data.frame allowing to select column to view
+#'
+#' @param ... variable name to include in list
+#' @param nline Number of rows to show (default to n) If negative then number of row from the end
+#'
+#' @return the resulting list
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' view(age,case)
+#' view(age,case, nline=5)
+#' view(age,case, nline= -10)
+#' }
+
+view <- function(...,nline=10) {
+  r <- as.list(match.call())
+  n <- names(r)
+  i <-pmatch("nline",n, nomatch = 0)
+  if (i > 0) {
+    r[i] <- NULL
+  }
+  l <- length(r)
+  c <- vector()
+  j <- 0
+  for (i in 2:l) {
+    j <- j+1
+    c[j]<- as.character(r[i])
+  }
+  df <- getdata()
+  if (nline > 0) {
+     res <- df[1:nline,c]
+  } else {
+    l <- nrow(df)
+    nline <- l + nline
+    res <- df[nline:l,c]
+  }
+  res
+}
+
 
