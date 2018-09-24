@@ -12,7 +12,7 @@ set_option(op, value)
 \item{value}{The value to be assigned to option}
 }
 \value{
-option value
+The previous option value before new assignment
 }
 \description{
 assign a package option

@@ -2,7 +2,7 @@
 % Please edit documentation in R/basetools.R
 \name{read}
 \alias{read}
-\title{read}
+\title{@title Read a data.frame from disk into memory}
 \usage{
 read(filename = "", label = NULL)
 }
@@ -12,9 +12,16 @@ read(filename = "", label = NULL)
 \item{label}{Label to be added as attribute to dataframe}
 }
 \description{
-read a data.frame.
+Read a file of various format and return a data.frame.
  The function try to identify the file structure in order to call the appropriate specific
  command
+ Currently accepted extension are : csv, dta, rec, rda
+}
+\details{
+For csv files the first line is analysed to identify the separator.
+ Accepted separator are  ,  or  ;
+
+@return  The data.frame is returned (and should be assign to a variable)
 }
 \examples{
 fil <- tempfile(fileext = ".data")

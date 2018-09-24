@@ -2,7 +2,7 @@
 % Please edit documentation in R/dataman.R
 \name{describe}
 \alias{describe}
-\title{Title  List data.frame column}
+\title{List data.frame column}
 \usage{
 describe(df)
 }
@@ -13,7 +13,7 @@ describe(df)
 Structure of data.frame column
 }
 \description{
-Title  List data.frame column
+List data.frame column
 }
 \examples{
 describe(test)
