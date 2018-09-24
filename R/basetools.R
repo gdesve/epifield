@@ -742,7 +742,7 @@ clear <- function(what, noask = FALSE) {
   if ( sum(grep("\\$",swhat) ) > 0 ) {
     cat("To clear a data.frame variable like ")
     italic(swhat)
-    normal("  Use drop function")
+    normal("  Use dropvar function")
     continue <- FALSE
   }
   # if expr is a variable wich contain char, we can use content of expr ?
