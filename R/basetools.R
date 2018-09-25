@@ -400,7 +400,7 @@ generate <- function(name, value) {
   } else {
     cat("To use generate, you should first set the default data.frame with sedata()")
   }
-  r
+  invisible(r)
 }
 
 

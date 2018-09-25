@@ -46,15 +46,17 @@ logreg <- function(outvar,expvar, full= FALSE,quietly=FALSE) {
       print(reg$call)
     }
 
-    catret("Odds ratio with CI")
     r <- exp(cbind(coef(reg), confint(reg)))
+    catret("")
+    catret("Odds ratio with CI")
+    catret("")
     dimnames(r) <- list(dimnames(r)[[1]],c("Odds ratio","LCI","UCI"))
     r2=round(r,digits=get_option("stat_digits"))
     print(r2)
   }
   result <- list()
   result$call <- reg$call
-  result$or <- r
-  names(dimnames(result)) <- c("","Odds ratio with CI")
+  result$OR <- r
+  names(dimnames(result$OR)) <- c("","Odds ratio with CI")
   invisible(result)
 }

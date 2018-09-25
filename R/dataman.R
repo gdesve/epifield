@@ -54,7 +54,7 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
     ifexpr <- paste0("recode.if(",vartorecname,",",condtext,",",newvalue,")")
     r <- eval(parse(text=ifexpr) )
       # recode.if(vartorecname,condtext, newvalue)
-    r
+    invisible(r)
   }
 }
 
@@ -142,7 +142,7 @@ recode.if  <- function(xvar, condition, newvalue) {
     }
   }
   if ( continue ) {
-    nrec <- sum(condresult)
+    nrec <- sum(condresult,na.rm = TRUE)
     if (nrec >0 ) {
       newcolexpr <- paste0("ifelse(",condtext,",",newvaluetext,",",vartorecfname,")")
       newvar <- eval_expr(newcolexpr, df)

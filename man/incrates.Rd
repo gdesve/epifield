@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{incrates}
 \alias{incrates}
-\title{Title Calculate incidence rates with CI}
+\title{Calculate incidence rates with CI}
 \usage{
 incrates(df, conflvl = 0.95)
 }
@@ -15,7 +15,7 @@ incrates(df, conflvl = 0.95)
 a table of result
 }
 \description{
-Title Calculate incidence rates with CI
+Calculate incidence rates with CI
 }
 \examples{
 dat <- cbind(c(5,10,20),c(100,120,150))

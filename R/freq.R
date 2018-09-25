@@ -111,12 +111,12 @@ epitable <- function(out,exp,row=FALSE,col=FALSE,fisher=TRUE)  {
      # calculations
      r <- table(expdata,outdata,useNA="no")
 
+     t <- chisq.test(r)
      # check size of result table
      bin <- (dim(r)==c(2,2)&&TRUE)
-     if (bin) {
-       t <- chisq.test(r)
+     if (bin & fisher) {
        f <- fisher.test(r)$p.value
-     }
+     } else {fisher <- FALSE}
      prop <- NULL
      if (row) {
        prop <- round(prop.table(r,1)*100, digits = 2)
