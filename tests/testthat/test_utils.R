@@ -27,6 +27,19 @@ test_that("File dta load ", {
   expect_equal(exists("gastro5"),TRUE)
 })
 
+test_that("File csv load ", {
+  tira <- read("tira.csv")
+  expect_equal(is.data.frame(tira),TRUE)
+  expect_equal(is.factor(tira$sex),FALSE)
+})
+
+test_that("File csv load with factor ", {
+  tira <- read("tira.csv",factorise=TRUE)
+  expect_equal(is.data.frame(tira),TRUE)
+  expect_equal(is.factor(tira$sex),TRUE)
+})
+
+
 
 test_that("right of text correct", {
   expect_equal(right("dummy_test",4),"test")

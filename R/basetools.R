@@ -620,7 +620,10 @@ normal <- function(...) {
 #' @export
 #' @importFrom foreign read.dta
 #' @param filename  Name of file to be read. Type is defined by extension
-#' @param label Label to be added as attribute to dataframe
+#' @param factorise Indicate if character variable should be read as factor. If false, the default
+#' The column is read as character without transformation. Further transformation can be done
+#' with factor base function or with epiorder function.
+#' @param label Label to be added as attribute to data.frame. This label will be used as description
 #' @examples
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
@@ -629,7 +632,7 @@ normal <- function(...) {
 #' unlink(fil) # tidy up
 #'
 
-read <- function(filename = "", label = NULL) {
+read <- function(filename = "", factorise = FALSE, label = NULL) {
   # no file ? choose one
   if (filename == "") {
     catret("retrieving file tree...please wait.")
@@ -651,9 +654,9 @@ read <- function(filename = "", label = NULL) {
       comma1 <- charcount(",", test[1])
       semicol1 <- charcount(";", test[1])
       if (comma1 > 0) {
-        df <- utils::read.csv(filename)
+        df <- utils::read.csv(filename,as.is = !factorise)
       } else if (semicol1  > 0) {
-        df <- utils::read.csv2(filename)
+        df <- utils::read.csv2(filename,as.is = !factorise)
       } else {
         red("Separator not identified in :")
         normal("\n")

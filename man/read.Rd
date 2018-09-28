@@ -4,12 +4,16 @@
 \alias{read}
 \title{@title Read a data.frame from disk into memory}
 \usage{
-read(filename = "", label = NULL)
+read(filename = "", factorise = FALSE, label = NULL)
 }
 \arguments{
 \item{filename}{Name of file to be read. Type is defined by extension}
 
-\item{label}{Label to be added as attribute to dataframe}
+\item{factorise}{Indicate if character variable should be read as factor. If false, the default
+The column is read as character without transformation. Further transformation can be done
+with factor base function or with epiorder function.}
+
+\item{label}{Label to be added as attribute to data.frame. This label will be used as description}
 }
 \description{
 Read a file of various format and return a data.frame.
