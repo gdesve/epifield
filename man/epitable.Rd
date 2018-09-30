@@ -4,12 +4,16 @@
 \alias{epitable}
 \title{Cross tabulation ( 2by2 table).}
 \usage{
-epitable(out, exp, row = FALSE, col = FALSE, fisher = TRUE)
+epitable(out, exp, missing = FALSE, row = FALSE, col = FALSE,
+  fisher = TRUE)
 }
 \arguments{
 \item{out}{"Outcome" as numbers, factors or text}
 
 \item{exp}{"Exposure" as numbers, factors or text.}
+
+\item{missing}{Boolean if FALSE, missing are not included in the table.
+A summary output of number of missing values is added at the end}
 
 \item{row}{"Row percentages"}
 

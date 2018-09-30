@@ -88,7 +88,7 @@ epif_env$last_error <- NA
 SEP   <- "|"
 CROSS <- "+"
 LINE  <- "-"
-FIRST <- 12
+FIRST <- 18
 COL   <- 8
 
 # internal used to reset the getvar system
@@ -955,10 +955,11 @@ getvar <- function(what = NULL) {
         } else {
           if (dffound$count > 1) {
             warning(
-              paste(
+              paste0(
                 varname ,
-                "is an ambigous name and exists in following dataset :",
-                dffound$namestring
+                " is an ambiguous name and exists in following datasets: ",
+                dffound$namestring,"\n","You could try ",dffound$namelist[[1]],"$",varname,
+                "\n or try to use setdata(",dffound$namelist[[1]],")"
               ),
               call. = FALSE
             )

@@ -14,7 +14,8 @@
 #' @seealso \code{\link{table}} for 2by2 tables
 #' @export
 #' @param ... As numbers, factors or text.
-#' @param missing If false then suppress output of number of missing values
+#' @param missing If false then missing values are not included in the table
+#'   A summary output of number of missing values is added at the end
 #' @param quietly No output, only return value
 #' @return An array containing  values of \code{...}   \code{}
 #'
@@ -22,12 +23,12 @@
 #' freq(c(3,1,2,2,5))
 #'
 #'
-freq <- function(...,missing=TRUE,quietly = FALSE) {
+freq <- function(...,missing=FALSE,quietly = FALSE) {
   arg.passed <- substitute(...)
 
   cur.var <- getvar(arg.passed)
   if (! is.null(cur.var)) {
-    count <- table(cur.var, useNA="no")
+    count <- table(cur.var, useNA=ifelse(missing,"ifany","no") )
     tot <- length(cur.var)
     prop <- round(prop.table(count)*100, digits = 2)
     cum <- cumsum(prop)
@@ -47,8 +48,8 @@ freq <- function(...,missing=TRUE,quietly = FALSE) {
        outputtable(result,deci,totcol=FALSE,title,coldeci=cdeci )
     }
     # missing should be added to result
-    if (missing) {
-      cat("Missing:",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+    if (! missing) {
+      cat("Missing (NA):",mis," (",round(mis/tot*100, digits = 2),"%)\n")
     }
     # construct of returned list
     r <- list()
@@ -79,6 +80,8 @@ freq <- function(...,missing=TRUE,quietly = FALSE) {
 #' @export
 #' @param exp  "Exposure" as numbers, factors or text.
 #' @param out  "Outcome" as numbers, factors or text
+#' @param missing Boolean if FALSE, missing are not included in the table.
+#'   A summary output of number of missing values is added at the end
 #' @param row  "Row percentages"
 #' @param col  "Col percentages"
 #' @param fisher TRUE by default, display the fisher exact probability
@@ -89,7 +92,7 @@ freq <- function(...,missing=TRUE,quietly = FALSE) {
 #' }
 #'
 #'
-epitable <- function(out,exp,row=FALSE,col=FALSE,fisher=TRUE)  {
+epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
    r <- as.list(match.call())
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
@@ -109,7 +112,7 @@ epitable <- function(out,exp,row=FALSE,col=FALSE,fisher=TRUE)  {
 
 
      # calculations
-     r <- table(expdata,outdata,useNA="no")
+     r <- table(expdata,outdata,useNA=ifelse(missing,"ifany","no"))
 
      t <- chisq.test(r)
      # check size of result table
@@ -155,11 +158,35 @@ epitable <- function(out,exp,row=FALSE,col=FALSE,fisher=TRUE)  {
         cat(" Fisher exact :",round(f,digits = get_option("stat_digits")))
      }
      catret("")
-     catret("Missing :",mis," (",round(mis/tot*100, digits = 2),"%)\n")
-
+     if (!missing) {
+       catret("Missing (NA):",mis," (",round(mis/tot*100, digits = 2),"%)\n")
+     }
      invisible(result)
    }
 }
+
+
+#' sumstats
+#'
+#' Produce a summary
+#'
+#' @param what Variable to be analysed
+#'
+#' @return summary
+#' @export
+#'
+#' @examples
+#' sumstats(gastro$age)
+#'
+sumstats <- function(what) {
+  r <- as.list(match.call())
+  coldata <- getvar(r$what)
+  colname <- getvarname()
+  colfullname <- getvar()
+  summary(coldata)
+
+}
+
 
 
 # epifield documentation using roxygen2
