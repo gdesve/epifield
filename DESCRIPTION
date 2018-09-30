@@ -29,3 +29,4 @@ Collate:
     'multi.R'
     'dataman.R'
     'stats.R'
+    'checkmissing.R'

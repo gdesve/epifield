@@ -1,66 +1,107 @@
 #' checkMissing
 #'
-#' @param data data.frame
-#' @param vars NULL or a vector of colnames
-#' @param sort boolean If TRUE the output table is sorted
+#'
+#' @param what a data.frame, a vector or a vector of colnames
+#' @param ...  a list of variable to be tested. Is used only if "what" is not a dataframe
+#' @param sort boolean If TRUE the output table is sorted 'NOT IMPLEMENTED'
+#' @param showall boolean if FALSE, the default, then variables with no missing values are
+#' not included in the table
 #'
 #' @return list of 2 tables
-#' @export checkMissing
+#' @export checkmissing
 #'
-#' @author Jean Pierre Decorps
+#' @author Jean Pierre Decorps adapted for epifield by Gilles Desve
 #'
 #' @examples
 #' # still nothing
-checkMissing <- function(data, vars=NULL, sort=FALSE) {
-  Names = names(data)
-  if (is.null(vars) == FALSE) {
-    Names = vars;
+checkmissing <- function(what, ..., sort=FALSE,showall=FALSE ) {
+  r <- as.list(match.call())
+
+  i <- match("sort",names(r))
+  if (!is.na(i)) r[i]<-NULL
+
+  i <- match("showall",names(r))
+  if (!is.na(i)) r[i]<-NULL
+
+  r[1]<-NULL
+
+  if (missing(what)) {
+    what <- getdata()
   }
 
-  # Simple description of missing values
-  # ------------------------------------
-  missdesc <- function(Names) {
-    Colnames = c("Variable", "Missing", "% Missing");
-    Effectif = nrow(data);
-    Missing  = c();
-    PMissing = c();
+  df <- try(eval(r[[1]]),TRUE)
 
-    for (N in Names) {
-      Miss = sum(is.na(data[,N]));
-      PMiss = sprintf("%5.2f", (Miss / Effectif) * 100);
-      Missing = c(Missing, Miss);
-      PMissing = c(PMissing, PMiss);
+  if (is.data.frame(df)) {
+    vars = names(what)
+  } else {
+    if ( length(r) > 0 ) {
+      nb <- length(r)
+      vars <- list()
+      showall <- TRUE
+      for (i in 1:nb) {
+         name <- r[[i]]
+         vars[i] <- as.character(name)
+      }
     }
+  }
 
-    DF = data.frame(cbind(Names, as.numeric(Missing), PMissing))
-    names(DF) <- Colnames
-    DF[,2] <- as.numeric(as.character(DF[,2]))
-    DF[,3] <- as.numeric(as.character(DF[,3]))
-    if (sort == TRUE) {
-      DF <- DF[rev(order(DF[, "Missing"])),]
-      row.names(DF) <- c(1:nrow(DF))
+  if ( length(vars) > 0 ) {
+     name <- getvar(vars[[1]])
+     df <- getdf()
+  }
+
+  effectif = nrow(df);
+
+  res1  = list();
+  i <- 0
+  nomiss <- c()
+  for (name in vars) {
+    i <- i + 1
+    if (any(name==colnames(df)) ) {
+      miss1 <- sum(is.na(df[,name]))
+      if (miss1 > 0 | showall ) {
+        pmiss1 <- round((miss1 / effectif) * 100, digits = 2)
+        res1 <- rbind(res1, c(miss1,pmiss1))
+      } else {
+        nomiss <- cbind(nomiss,i)
+      }
+    } else {
+      res1 <- rbind(res1, c(NA,NA))
     }
-    return(DF);
   }
-
-
-  missbyrow <- function(Names, Effectif) {
-    Colnames = c("Nb missing values", "Frequency", "Percent", "Cumul");
-    counts = apply(data, 1, function(x) sum(is.na(x[Names])));
-    d <- as.data.frame(counts);
-    t <- table(counts);
-    vals = names(t);
-    t <- cbind(t, round(prop.table(t)*100,2));
-    DF1 <- as.data.frame(t);
-    Cum <- cumsum(DF1[,2]);
-    DF2 <- data.frame(cbind(vals, DF1$t, DF1$V2, Cum));
-    names(DF2) <- Colnames;
-    return(DF2);
+  if ( length(nomiss) > 0 ) {
+    vars <- vars[-nomiss]
   }
+  vars <- lapply(vars,lpad,width=16)
+  rownames(res1) <- vars
+  colnames(res1) <- c("Nb Missing", "% Missing")
+  names(dimnames(res1)) <- c("variables","Missing")
+  # if (sort == TRUE) {
+  #   o <- res1[, "Nb Missing"]
+  #   o <- order( sapply(o, "[", 2) )
+  #   res1 <- res1[rev(o),]
+  #   row.names(res1) <- c(1:nrow(res1))
+  # }
+  return(res1);
 
-  .df1 <- missdesc(Names)
-  .df2 <- missbyrow(Names, Effectif)
-  .L <- list(df1=.df1, df2=.df2)
-  .L
+  # sortBy <- function(a, field) a[order(sapply(a, "[[", i = field))]
+  # sortBy(a, "day")
+
+  # missbyrow <- function(vars, effectif) {
+  #   counts = apply(df, 1, function(x) sum(is.na(x[vars])));
+  #   d <- as.data.frame(counts);
+  #   t <- table(counts);
+  #   vals = names(t);
+  #   res1 <- cbind(t, round(prop.table(t)*100,2));
+  #   Cum <- cumsum(res1[,2]);
+  #   res2 <- cbind(vals, res1[,1], res1[,2], Cum);
+  #   names(res2) <- c("Nb missing values", "Frequency", "Percent", "Cumul")
+  #   return(res2)
+  # }
+  #
+  # res1 <- missdesc(vars, effectif)
+  # res2 <- missbyrow(vars, effectif)
+  # result <- list(missing=res1, missbyrow=res2)
+  # result
 
 }
