@@ -551,6 +551,35 @@ lpad <- function(value,
   return(r)
 }
 
+#' Transform character values into date
+#'
+#' @param x Character value to transform into date
+#' @param format Optionnal format
+#'
+#' @return the changed data
+#' @export
+#'
+#' @examples
+chartodate <- function(x,format="d/m/y")  {
+    r <- substitute(x)
+    varx <- getvar(r)
+    df <- getdf()
+    dfname <- get_option("last_df")
+    varname <- getvarname()
+    varfname <- getvar()
+    tvarx <- unique(varx)
+    first <- head(tvarx)
+    fdate <- format
+    fdate <- sub("d","%d",fdate)
+    fdate <- sub("m","%m",fdate)
+    fdate <- sub("y","%y",fdate)
+    fdate <- sub("yy","%Y",fdate)
+    fdate <- sub("Y","%Y",fdate)
+    dvar <- as.Date(varx,fdate)
+    df[,varname] <- dvar
+    push.data(dfname,df)
+}
+
 file.ext <- function(text) {
   x <- strsplit(text, "\\.")
   i <- length(x[[1]])
