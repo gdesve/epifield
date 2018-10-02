@@ -17,3 +17,7 @@ the changed data
 \description{
 Transform character values into date
 }
+\examples{
+data(gastro)
+chartodate(gastro$dob,"yy/m/d")
+}

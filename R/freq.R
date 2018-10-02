@@ -171,6 +171,7 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 #' Produce a summary
 #'
 #' @param what Variable to be analysed
+#' @param cond Optionnal logical expression to filter data
 #'
 #' @return summary
 #' @export
@@ -178,13 +179,19 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 #' @examples
 #' sumstats(gastro$age)
 #'
-sumstats <- function(what) {
+sumstats <- function(what,cond) {
   r <- as.list(match.call())
   coldata <- getvar(r$what)
-  colname <- getvarname()
   colfullname <- getvar()
-  summary(coldata)
-
+  if (! missing(cond)) {
+    tcond <- deparse(substitute(cond))
+    expr = paste0(colfullname,"[",tcond,"]")
+    df <- getdf()
+    coldata <- eval_expr(expr,df)
+  }
+  if (is.vector(coldata)) {
+    summary(coldata)
+  }
 }
 
 

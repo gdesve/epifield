@@ -555,11 +555,13 @@ lpad <- function(value,
 #'
 #' @param x Character value to transform into date
 #' @param format Optionnal format
-#'
+#' @importFrom utils head
 #' @return the changed data
 #' @export
 #'
 #' @examples
+#' data(gastro)
+#' chartodate(gastro$dob,"yy/m/d")
 chartodate <- function(x,format="d/m/y")  {
     r <- substitute(x)
     varx <- getvar(r)
@@ -865,7 +867,12 @@ is.var <- function(what="") {
        what <-glob2rx(what)
        for (i in lsys:0)  {
           lc <- ls(sys.frame(i),pattern=what)
-          if ( length(lc) > 0 ) lsfound <- TRUE
+          if ( length(lc) > 0 ) {
+             r=try(eval(parse(text = lc[1]), sys.frame(i)),TRUE)
+             if (! inherits(r, "try-error")) {
+              lsfound <- TRUE
+             }
+          }
        }
      }
    }

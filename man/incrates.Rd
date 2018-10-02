@@ -4,10 +4,16 @@
 \alias{incrates}
 \title{Calculate incidence rates with CI}
 \usage{
-incrates(df, conflvl = 0.95)
+incrates(labels, count, denom, per = 1000, conflvl = 0.95)
 }
 \arguments{
-\item{df}{A 2 column data.frame}
+\item{labels}{categorie/labels/name of rows. Indicator variable containing labels}
+
+\item{count}{variable to be used as countfor calculating the incidence}
+
+\item{denom}{denominator to use for incidence rates}
+
+\item{per}{integer to use as unit per}
 
 \item{conflvl}{The confidence level, usualy 0.95}
 }
@@ -18,6 +24,6 @@ a table of result
 Calculate incidence rates with CI
 }
 \examples{
-dat <- cbind(c(5,10,20),c(100,120,150))
-incrates(dat)
+dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
+incrates(dat$lab,dat$nb,dat$den)
 }

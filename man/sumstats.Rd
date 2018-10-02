@@ -4,10 +4,12 @@
 \alias{sumstats}
 \title{sumstats}
 \usage{
-sumstats(what)
+sumstats(what, cond)
 }
 \arguments{
 \item{what}{Variable to be analysed}
+
+\item{cond}{Optionnal logical expression to filter data}
 }
 \value{
 summary

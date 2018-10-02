@@ -1,6 +1,9 @@
 #' @title Calculate incidence rates with CI
 #'
-#' @param df  A 2 column data.frame
+#' @param labels  categorie/labels/name of rows. Indicator variable containing labels
+#' @param count variable to be used as countfor calculating the incidence
+#' @param denom denominator to use for incidence rates
+#' @param per integer to use as unit per
 #' @param conflvl The confidence level, usualy 0.95
 #'
 #' @return a table of result
@@ -8,31 +11,33 @@
 #' @importFrom stats qchisq
 #'
 #' @examples
-#' dat <- cbind(c(5,10,20),c(100,120,150))
-#' incrates(dat)
-incrates <- function(df, conflvl = 0.95)
-{
-  lim  <- 1 - ((1 - conflvl)/2)
+#' dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
+#' incrates(dat$lab,dat$nb,dat$den)
+incrates <- function(labels,count,denom, per = 1000, conflvl = 0.95) {
+  r <- as.list(match.call())
 
-#  if (is.matrix(df) == FALSE)
-#      stop("Error: dat must be a two-column matrix")
-
-      case <- df[, 1]
-      total <- df[, 2]
-      p <- case/total
+      lim  <- 1 - ((1 - conflvl)/2)
+      level <- getvar(r$labels)
+      levelnames <- getvar()
+      case <- getvar(r$count)
+      casename <- getvar()
+      total <- getvar(r$denom)
+      total <- total/per
+      p <- round(case/total,4)
+      if (length(p)>0) {
       low <- ifelse(case == 0, 0, (0.5 * qchisq(p = lim, df = 2 * case + 2, lower.tail = FALSE)/total))
       up <- 0.5 * qchisq(p = 1 - lim, df = 2 * case, lower.tail = FALSE)/total
-
-      r <- cbind(p, low, up)
-      colnames(r) <- c("IR","LCI", "UCI")
+      low=round(low,4)
+      up=round(up,4)
+      r <- cbind(case, p, low, up)
+      colnames(r) <- c("count","IR","LCI", "UCI")
       # rownames <- categories
-      rows <- vector("character",length = length(df[,1]))
-      rows[] <- ""
-      rownames(r) <- rows
-      names(dimnames(r)) <- c("","Incidence rates")
-      title = paste("Incidence of ","")
-      outputtable(r,deci=6,title="Incidence of ",coldeci=c(TRUE,TRUE,TRUE))
-      return(r)
+      rownames(r) <- level
+      names(dimnames(r)) <- c(levelnames,"Incidence rates")
+      title = paste("Incidence of ",casename,"per",format(per,scientific=FALSE))
+      outputtable(r,deci=4,title=title,coldeci=c(FALSE,TRUE,TRUE,TRUE))
+      invisible(r)
+      } else {cat("Error in formula") }
 }
 
 

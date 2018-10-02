@@ -10,7 +10,39 @@
 # Author : Gilles Desve & al...
 #
 
+# cryptoagr =aggregate(crypto[,c("count","Year")],by=list(Region=crypto$Region,Sex=crypto$Sex), FUN=sum)
+# cryptoagr =aggregate(crypto$count,by=list(Year=crypto$Region), FUN=sum)
+# cryptoagg <- aggregate(numberofcases ~ month, FUN = sum, data = crypto2015,na.rm=TRUE)
 
+#' Title
+#'
+#' @param countvar Variable to be aggregated
+#' @param byvar Indicator for wich sum will be calculated
+#'
+#' @return aggregated data
+#' @export
+#'
+#' @examples
+#' df <- data.frame("count"=c(4,5),"year"=c(2015,2016))
+#' sumby(count,year)
+sumby <- function(countvar,byvar) {
+  r <- as.list(match.call())
+
+  getvar(r$countvar)
+  varcount <- getvar()
+  dfname <- get_option("last_df")
+  getvar(r$byvar)
+  varby <- getvar()
+
+  texpr <- paste("aggregate(",varcount,",by=list(",varby,"),FUN=sum)" )
+    # this doesn't allow vector as parameters
+    # texpr <- paste("aggregate(",r$countvar,"~",r$byvar,",FUN=sum, data =",dfname, ")" )
+
+  res = eval(parse(text=texpr))
+  colnames(res) <- c(r$byvar,r$countvar)
+  # r <- aggregate(countvar ~ byvar, FUN = sum, data = df,na.rm=TRUE)
+  res
+}
 
 
 #' Title recode a var if a condition if true
@@ -260,7 +292,7 @@ describe <- function(df) {
     # toString to be tested ...
     r5[i] <- paste(r4[[i]],sep = " ",collapse= ",")
   }
-  r <- cbind(name=r1,type=r2,desc=r3,labels=r5)
+  r <- cbind(type=r2,desc=r3,labels=r5)
   r
 
 }
