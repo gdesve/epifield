@@ -212,7 +212,7 @@ setdata <- function(df = NULL) {
       if (is.data.frame(get(df))) {
          set_option("dataset", df)
       } else cat(df , " is not a data.frame")
-    }
+    } else if (df=="") set_option("dataset", df)
   }
   # pour finir verifier que df fait bien partie de l'environnement
 }
@@ -533,6 +533,17 @@ catret  <- function(...) {
    cat(...,"\n")
 }
 
+colname <- function(what) {
+  what <- deparse(what)
+  lstop <- nchar(what)
+  ldol <- regexpr("\\$",what)
+  ldol <- ldol[1]
+  if (ldol > 0) {
+    what <- substr(what,ldol+1,lstop)
+  }
+  return(what)
+}
+
 lpad <- function(value,
                  width = 11,
                  digit = 0) {
@@ -555,6 +566,7 @@ lpad <- function(value,
 #'
 #' @param x Character value to transform into date
 #' @param format Optionnal format
+#' @param update If TRUE the default, the data.frame is updtade with new values
 #' @importFrom utils head
 #' @return the changed data
 #' @export
@@ -562,24 +574,27 @@ lpad <- function(value,
 #' @examples
 #' data(gastro)
 #' chartodate(gastro$dob,"yy/m/d")
-chartodate <- function(x,format="d/m/y")  {
+chartodate <- function(x,format="d/m/y",update=TRUE)  {
     r <- substitute(x)
     varx <- getvar(r)
     df <- getdf()
     dfname <- get_option("last_df")
     varname <- getvarname()
     varfname <- getvar()
-    tvarx <- unique(varx)
-    first <- head(tvarx)
-    fdate <- format
-    fdate <- sub("d","%d",fdate)
-    fdate <- sub("m","%m",fdate)
-    fdate <- sub("y","%y",fdate)
-    fdate <- sub("yy","%Y",fdate)
-    fdate <- sub("Y","%Y",fdate)
-    dvar <- as.Date(varx,fdate)
-    df[,varname] <- dvar
-    push.data(dfname,df)
+    if (!is.null(varx)) {
+      fdate <- format
+      fdate <- sub("d","%d",fdate)
+      fdate <- sub("m","%m",fdate)
+      fdate <- sub("y","%y",fdate)
+      fdate <- sub("yy","%Y",fdate)
+      fdate <- sub("Y","%Y",fdate)
+      dvar <- as.Date(varx,fdate)
+      if (update & !is.null(df))  {
+        df[,varname] <- dvar
+        push.data(dfname,df)
+      }
+      invisible(dvar)
+    }
 }
 
 file.ext <- function(text) {
@@ -912,7 +927,7 @@ getvar <- function(what = NULL) {
     # }
     # reset of global vars
     resetvar()
-
+    dfname <- ""
     # Look at type of argument and get a working version of it
     r <- try(mwhat <- mode(what),TRUE)
     if (inherits(r, "try-error")) {
@@ -979,8 +994,19 @@ getvar <- function(what = NULL) {
         # may be varname is part of a dataset ?
         dffound <- finddf(varname)
         # only one ? great
+        if (dffound$count > 1) {
+          dfset <- setdata()
+          if (!dfset=="") {
+            lset <- dfset %in% dffound$namelist
+            if (lset) {
+              dfname  <- dfset
+            }
+          }
+        }
         if (dffound$count == 1) {
           dfname <- dffound$namelist[[1]]
+        }
+        if (!dfname=="") {
           varfullname <- paste(dfname, "$", varname , sep = "")
           # we update varname with data.frame value
           epif_env$last_var <- varfullname
@@ -988,8 +1014,7 @@ getvar <- function(what = NULL) {
           epif_env$last_df <- dfname
           r <- try(eval(parse(text =varfullname)),TRUE)
           return(r)
-        } else {
-          if (dffound$count > 1) {
+        } else if (dffound$count > 1){
             warning(
               paste0(
                 varname ,
@@ -1000,12 +1025,11 @@ getvar <- function(what = NULL) {
               call. = FALSE
             )
             return(NULL)
-          } else {
+        }
+      } else {
             warning(paste(varname , "is not defined as variable or data.frame column"), call. = FALSE)
             return(NULL)
-          }
-        } # 0 or more than 1
-      } # it's not a formula
+      }
     } # var not exists
   } # not missing
 }
@@ -1045,7 +1069,7 @@ tab_line <- function(ncol, tot = FALSE) {
   cat(l1, CROSS, l2, l3, l4, "\n", sep = "")
 }
 
-tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL) {
+tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL, indic=NULL) {
   l <- length(line)
   if (is.null(coldeci)) {coldeci[1:l] <- FALSE}
   cat(lpad(rname, FIRST))
@@ -1056,7 +1080,11 @@ tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL) {
     cat(fout, " ")
   }
   if (tot) {
-    cat(SEP)
+    if (!is.null(indic)) {
+      cat(indic)
+    } else {
+      cat(SEP)
+    }
   }
   ndigit <- ifelse(coldeci[l],deci,0)
   cat(lpad(line[l], COL, ndigit ))
@@ -1068,8 +1096,10 @@ outputtable <-
   function(table,
            deci = NULL,
            totcol = FALSE,
+           totrow = TRUE,
            title = "Frequency distribution",
-           perc = NULL,
+           rowperc = NULL,
+           colperc=NULL,
            coldeci=NULL)  {
     catret(title)
     catret("")
@@ -1092,24 +1122,33 @@ outputtable <-
 
     # separator line
     tab_line(ncol, totcol)
-    if ( ! is.null(perc) ) {
-      colperc<-NULL
-      colperc[1:ncol-1] <- TRUE
-      colperc[ncol] <- FALSE
-    }
+
+    percdeci<-NULL
+    percdeci[1:ncol-1] <- TRUE
+    percdeci[ncol] <- FALSE
 
     # each row
-    for (i in (1:(nline - 1))) {
+    totline <- nline
+    if (totrow) {totline <- nline - 1}
+    for (i in (1:(totline))) {
       tab_row(rown[i], table[i, ], deci, totcol,coldeci)
-      if ( ! is.null(perc) ) {
-        tab_row("", perc[i, ], deci, totcol,colperc)
+      if ( ! is.null(rowperc) ) {
+        tab_row("", rowperc[i, ], deci, totcol,percdeci,indic=">")
+      }
+      if ( ! is.null(colperc) ) {
+        tab_row("", colperc[i, ], deci, totcol,percdeci,indic="V")
       }
     }
 
     # separator line
     tab_line(ncol, totcol)
     # Totals row
-    tab_row(rown[nline], table[nline, ], deci, totcol, coldeci)
+    if (totrow) {
+      tab_row(rown[nline], table[nline, ], deci, totcol, coldeci)
+      if ( ! is.null(colperc) ) {
+        tab_row("", colperc[nline, ], deci, totcol,percdeci,indic="V")
+      }
+    }
   }
 
 

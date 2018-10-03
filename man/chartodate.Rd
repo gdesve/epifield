@@ -4,12 +4,14 @@
 \alias{chartodate}
 \title{Transform character values into date}
 \usage{
-chartodate(x, format = "d/m/y")
+chartodate(x, format = "d/m/y", update = TRUE)
 }
 \arguments{
 \item{x}{Character value to transform into date}
 
 \item{format}{Optionnal format}
+
+\item{update}{If TRUE the default, the data.frame is updtade with new values}
 }
 \value{
 the changed data

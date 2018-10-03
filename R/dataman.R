@@ -30,16 +30,17 @@ sumby <- function(countvar,byvar) {
 
   getvar(r$countvar)
   varcount <- getvar()
-  dfname <- get_option("last_df")
+  # dfname <- get_option("last_df")
   getvar(r$byvar)
   varby <- getvar()
 
   texpr <- paste("aggregate(",varcount,",by=list(",varby,"),FUN=sum)" )
     # this doesn't allow vector as parameters
     # texpr <- paste("aggregate(",r$countvar,"~",r$byvar,",FUN=sum, data =",dfname, ")" )
-
   res = eval(parse(text=texpr))
-  colnames(res) <- c(r$byvar,r$countvar)
+  byvar <- colname(r$byvar)
+  countvar <- colname(r$countvar)
+  colnames(res) <- c(byvar,countvar)
   # r <- aggregate(countvar ~ byvar, FUN = sum, data = df,na.rm=TRUE)
   res
 }

@@ -45,7 +45,7 @@ freq <- function(...,missing=FALSE,quietly = FALSE) {
     title <- paste("Frequency distribution of",getvar())
     names(dimnames(result))  <- c(var.name,title)
     if (! quietly) {
-       outputtable(result,deci,totcol=FALSE,title,coldeci=cdeci )
+       outputtable(result,deci,totcol=FALSE,title=title,coldeci=cdeci )
     }
     # missing should be added to result
     if (! missing) {
@@ -113,17 +113,25 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 
      # calculations
      r <- table(expdata,outdata,useNA=ifelse(missing,"ifany","no"))
-
+     # to suppress the chisq warning if table is more than 2*2
+     options("warn"=-1)
      t <- chisq.test(r)
+     options("warn"=0)
      # check size of result table
      bin <- (dim(r)==c(2,2)&&TRUE)
      if (bin & fisher) {
        f <- fisher.test(r)$p.value
      } else {fisher <- FALSE}
-     prop <- NULL
+     proprow <- NULL
+     propcol <- NULL
      if (row) {
-       prop <- round(prop.table(r,1)*100, digits = 2)
-       prop <- cbind(prop,100)
+       proprow <- round(prop.table(r,1)*100, digits = 2)
+       proprow <- cbind(proprow,100)
+     }
+     if (col) {
+       propcol <- round(prop.table(r,2)*100, digits = 2)
+       propcol <- cbind(propcol,"")
+       propcol <- rbind(propcol,100)
      }
 
      m <- margin.table(r,1)
@@ -138,14 +146,14 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 
      title <- paste("Tabulation of",outdata.fname,"by",expdata.fname)
 
-     outputtable(r, deci=1, totcol=TRUE, title=title, perc = prop)
+     outputtable(r, deci=1, totcol=TRUE, title=title, rowperc = proprow , colperc = propcol )
 
      # construct the return list
      result <- list()
      result$table <- r
-     if (row) {
-        result$prop <- prop
-     }
+     result$rowperc <- proprow
+     result$colperc <- propcol
+
      result$chisq <- t$statistic[[1]]
      result$chisq.p <- t$p.value
      result$fischer <- t$p.value
@@ -189,9 +197,11 @@ sumstats <- function(what,cond) {
     df <- getdf()
     coldata <- eval_expr(expr,df)
   }
-  if (is.vector(coldata)) {
+  if (!is.null(coldata)) {
+    catret("Summary for",colfullname)
     summary(coldata)
   }
+
 }
 
 

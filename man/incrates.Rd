@@ -4,7 +4,7 @@
 \alias{incrates}
 \title{Calculate incidence rates with CI}
 \usage{
-incrates(labels, count, denom, per = 1000, conflvl = 0.95)
+incrates(labels, count, denom, per = 1e+05, conflvl = 0.95)
 }
 \arguments{
 \item{labels}{categorie/labels/name of rows. Indicator variable containing labels}

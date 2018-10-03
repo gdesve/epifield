@@ -13,7 +13,7 @@
 #' @examples
 #' dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
 #' incrates(dat$lab,dat$nb,dat$den)
-incrates <- function(labels,count,denom, per = 1000, conflvl = 0.95) {
+incrates <- function(labels,count,denom, per = 100000, conflvl = 0.95) {
   r <- as.list(match.call())
 
       lim  <- 1 - ((1 - conflvl)/2)
@@ -35,7 +35,7 @@ incrates <- function(labels,count,denom, per = 1000, conflvl = 0.95) {
       rownames(r) <- level
       names(dimnames(r)) <- c(levelnames,"Incidence rates")
       title = paste("Incidence of ",casename,"per",format(per,scientific=FALSE))
-      outputtable(r,deci=4,title=title,coldeci=c(FALSE,TRUE,TRUE,TRUE))
+      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=c(FALSE,TRUE,TRUE,TRUE))
       invisible(r)
       } else {cat("Error in formula") }
 }
