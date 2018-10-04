@@ -18,24 +18,25 @@ incrates <- function(labels,count,denom, per = 100000, conflvl = 0.95) {
 
       lim  <- 1 - ((1 - conflvl)/2)
       level <- getvar(r$labels)
-      levelnames <- getvar()
+      levelnames <- getvarname()
       case <- getvar(r$count)
       casename <- getvar()
       total <- getvar(r$denom)
       total <- total/per
       p <- round(case/total,4)
-      if (length(p)>0) {
+      nline <- length(p)
+      if (nline>0) {
       low <- ifelse(case == 0, 0, (0.5 * qchisq(p = lim, df = 2 * case + 2, lower.tail = FALSE)/total))
       up <- 0.5 * qchisq(p = 1 - lim, df = 2 * case, lower.tail = FALSE)/total
       low=round(low,4)
       up=round(up,4)
-      r <- cbind(case, p, low, up)
-      colnames(r) <- c("count","IR","LCI", "UCI")
+      r <- cbind(level,case, p, low, up)
+      colnames(r) <- c(levelnames,"count","IR","LCI", "UCI")
       # rownames <- categories
-      rownames(r) <- level
-      names(dimnames(r)) <- c(levelnames,"Incidence rates")
+      rownames(r) <- c(1:nline)
+      names(dimnames(r)) <- c("","Incidence rates")
       title = paste("Incidence of ",casename,"per",format(per,scientific=FALSE))
-      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=c(FALSE,TRUE,TRUE,TRUE))
+      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=c(FALSE,FALSE,TRUE,TRUE,TRUE))
       invisible(r)
       } else {cat("Error in formula") }
 }
