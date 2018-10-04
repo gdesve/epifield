@@ -1061,18 +1061,18 @@ finddf <- function(varname) {
 }
 
 
-tab_line <- function(ncol, tot = FALSE) {
-  l1 <- replicate(LINE, FIRST + 1)
+tab_line <- function(ncol, tot = FALSE, first=FIRST) {
+  l1 <- replicate(LINE, first + 1)
   l2 <- replicate(LINE, (ncol - 1) * (COL + 2))
   l3 <- ifelse(tot, CROSS, LINE)
   l4 <- replicate(LINE, COL )
   cat(l1, CROSS, l2, l3, l4, "\n", sep = "")
 }
 
-tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL, indic=NULL) {
+tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL, indic=NULL, first=FIRST) {
   l <- length(line)
   if (is.null(coldeci)) {coldeci[1:l] <- FALSE}
-  cat(lpad(rname, FIRST))
+  cat(lpad(rname, first))
   cat("", SEP)
   for (i in 1:(l - 1)) {
     ndigit <- ifelse(coldeci[i],deci,0)
@@ -1100,7 +1100,8 @@ outputtable <-
            title = "Frequency distribution",
            rowperc = NULL,
            colperc=NULL,
-           coldeci=NULL)  {
+           coldeci=NULL,
+           first=FIRST)  {
     catret(title)
     catret("")
     ncol <- dim(table)[2]
@@ -1120,10 +1121,10 @@ outputtable <-
     # rows title and columns names
     name <- names(dimnames(table))[1]
     if (is.null(name))  name <- ""
-    tab_row(name, coln, deci, totcol, coldeci)
+    tab_row(name, coln, deci, totcol, coldeci,first=first)
 
     # separator line
-    tab_line(ncol, totcol)
+    tab_line(ncol, totcol,first=first)
 
     percdeci<-NULL
     percdeci[1:ncol-1] <- TRUE
@@ -1133,22 +1134,22 @@ outputtable <-
     totline <- nline
     if (totrow) {totline <- nline - 1}
     for (i in (1:(totline))) {
-      tab_row(rown[i], table[i, ], deci, totcol,coldeci)
+      tab_row(rown[i], table[i, ], deci, totcol,coldeci,first=first)
       if ( ! is.null(rowperc) ) {
-        tab_row("", rowperc[i, ], deci, totcol,percdeci,indic=">")
+        tab_row("", rowperc[i, ], deci, totcol,percdeci,indic=">",first=first)
       }
       if ( ! is.null(colperc) ) {
-        tab_row("", colperc[i, ], deci, totcol,percdeci,indic="V")
+        tab_row("", colperc[i, ], deci, totcol,percdeci,indic="V",first=first)
       }
     }
 
     # separator line
-    tab_line(ncol, totcol)
+    tab_line(ncol, totcol,first=first)
     # Totals row
     if (totrow) {
-      tab_row(rown[nline], table[nline, ], deci, totcol, coldeci)
+      tab_row(rown[nline], table[nline, ], deci, totcol, coldeci,first=first)
       if ( ! is.null(colperc) ) {
-        tab_row("", colperc[nline, ], deci, totcol,percdeci,indic="V")
+        tab_row("", colperc[nline, ], deci, totcol,percdeci,indic="V",first=first)
       }
     }
   }

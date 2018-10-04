@@ -1,8 +1,8 @@
 #' @title Calculate incidence rates with CI
 #'
-#' @param labels  categorie/labels/name of rows. Indicator variable containing labels
 #' @param count variable to be used as countfor calculating the incidence
 #' @param denom denominator to use for incidence rates
+#' @param data  Optionnal data.frame containing the data
 #' @param per integer to use as unit per
 #' @param conflvl The confidence level, usualy 0.95
 #'
@@ -15,14 +15,21 @@
 #' incrates(dat$lab,dat$nb,dat$den)
 incrates <- function(count,denom, data, per = 100000, conflvl = 0.95) {
       r <- as.list(match.call())
+      if (missing(data)) {
+        data <- getdf()
+        olddata <- ""
+      } else {
+        olddata <- setdata()
+        setdata(deparse(substitute(data)))
+      }
 
       lim  <- 1 - ((1 - conflvl)/2)
       case <- getvar(r$count)
       casename <- getvar()
-      if (missing(data)) {
-          data <- getdf()
-      }
       total <- getvar(r$denom)
+
+      if (! olddata=="") setdata(olddata)
+
       total <- total/per
       p <- round(case/total,4)
       nline <- length(p)
@@ -48,7 +55,7 @@ incrates <- function(count,denom, data, per = 100000, conflvl = 0.95) {
       rownames(r) <- c(1:nline)
       names(dimnames(r)) <- c("","Incidence rates")
       title = paste("Incidence of ",casename,"per",format(per,scientific=FALSE))
-      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=coldec)
+      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=coldec,first=3)
       invisible(r)
       } else {cat("Error in formula") }
 }
