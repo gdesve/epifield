@@ -13,14 +13,15 @@
 #' @examples
 #' dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
 #' incrates(dat$lab,dat$nb,dat$den)
-incrates <- function(labels,count,denom, per = 100000, conflvl = 0.95) {
-  r <- as.list(match.call())
+incrates <- function(count,denom, data, per = 100000, conflvl = 0.95) {
+      r <- as.list(match.call())
 
       lim  <- 1 - ((1 - conflvl)/2)
-      level <- getvar(r$labels)
-      levelnames <- getvarname()
       case <- getvar(r$count)
       casename <- getvar()
+      if (missing(data)) {
+          data <- getdf()
+      }
       total <- getvar(r$denom)
       total <- total/per
       p <- round(case/total,4)
@@ -30,13 +31,24 @@ incrates <- function(labels,count,denom, per = 100000, conflvl = 0.95) {
       up <- 0.5 * qchisq(p = 1 - lim, df = 2 * case, lower.tail = FALSE)/total
       low=round(low,4)
       up=round(up,4)
-      r <- cbind(level,case, p, low, up)
-      colnames(r) <- c(levelnames,"count","IR","LCI", "UCI")
+      if (is.data.frame(data)) {
+         oldcolname <- colnames(data)
+         oldnbvar <- length(oldcolname)
+         coldec <- vector(mode="logical",length=oldnbvar)
+         coldec <- c(coldec,TRUE,TRUE,TRUE)
+         r <- cbind(data, p, low, up)
+         newcolnames <- c(oldcolname,"IR","LCI", "UCI")
+         colnames(r) <- newcolnames
+      } else {
+        r <- cbind(case, p, low, up)
+        colnames(r) <- cbind(casename,"IR","LCI", "UCI")
+        coldec <- c(FALSE,TRUE,TRUE,TRUE)
+      }
       # rownames <- categories
       rownames(r) <- c(1:nline)
       names(dimnames(r)) <- c("","Incidence rates")
       title = paste("Incidence of ",casename,"per",format(per,scientific=FALSE))
-      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=c(FALSE,FALSE,TRUE,TRUE,TRUE))
+      outputtable(r,deci=4,totrow=FALSE,title=title,coldeci=coldec)
       invisible(r)
       } else {cat("Error in formula") }
 }

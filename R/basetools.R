@@ -1076,7 +1076,7 @@ tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL, indic=NULL) 
   cat("", SEP)
   for (i in 1:(l - 1)) {
     ndigit <- ifelse(coldeci[i],deci,0)
-    fout <- lpad(line[i], COL, digit = ndigit)
+    fout <- lpad(line[[i]], COL, digit = ndigit)
     cat(fout, " ")
   }
   if (tot) {
@@ -1087,7 +1087,7 @@ tab_row <- function(rname, line, deci=0, tot = FALSE, coldeci=NULL, indic=NULL) 
     }
   }
   ndigit <- ifelse(coldeci[l],deci,0)
-  cat(lpad(line[l], COL, ndigit ))
+  cat(lpad(line[[l]], COL, ndigit ))
   cat("\n")
 }
 
@@ -1118,7 +1118,9 @@ outputtable <-
     }
 
     # rows title and columns names
-    tab_row(names(dimnames(table))[1], coln, deci, totcol, coldeci)
+    name <- names(dimnames(table))[1]
+    if (is.null(name))  name <- ""
+    tab_row(name, coln, deci, totcol, coldeci)
 
     # separator line
     tab_line(ncol, totcol)
