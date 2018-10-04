@@ -4,12 +4,16 @@
 \alias{sumby}
 \title{Title}
 \usage{
-sumby(countvar, byvar)
+sumby(countvar, byvar, byvar2, byvar3)
 }
 \arguments{
 \item{countvar}{Variable to be aggregated}
 
 \item{byvar}{Indicator for wich sum will be calculated}
+
+\item{byvar2}{Second Indicator for wich sum will be calculated}
+
+\item{byvar3}{Third Indicator for wich sum will be calculated}
 }
 \value{
 aggregated data

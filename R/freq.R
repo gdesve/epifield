@@ -223,8 +223,19 @@ sumstats <- function(what,cond) {
 #' @seealso \code{\link{epitable}} for cross tabulation
 #' @export
 #' @param var  Variable to reorder (will be converted as factor).
-#' @param mode "Yesno"   "Yesno"  "10" "+-"
-#' @param custom  Custom labels
+#' @param mode Label plan for the new factor variable
+#'         "yesno" for Yes, No
+#'         "10"    for 1, 0
+#'         "+-"    for +,-
+#'         "truefalse"  for TRUE, FALSE
+#'         or any set of two labels on the form c("A","B")
+#' @param levels  Custom set of levels as vector : c(1,0)
+#'        This levels will replaced by the lables then levels and labels should have the same
+#'        length and the same order
+#' @param update if TRUE (the default) Then the original dataset is updated with new value
+#'        The recoded column is replaced by the returned value
+#'        With this option, there is no need to reassign the retruned value,
+#'        but original data are lost.
 #'
 #' @return A vector reordered Can be nested as in \code{freq(epioredr(case))}
 #' @examples
@@ -233,7 +244,7 @@ sumstats <- function(what,cond) {
 #' }
 #'
 #'
-epiorder <- function(var,mode="yesno",custom=NULL) {
+epiorder <- function(var,mode="yesno",levels=NULL,update=TRUE) {
   r <- as.list(match.call())
   coldata <- getvar(r$var)
   colname <- getvarname()
@@ -253,9 +264,15 @@ epiorder <- function(var,mode="yesno",custom=NULL) {
     "truefalse" = {
       lab <- c("TRUE","FALSE")
     } ,
-    { cat("Mode:",mode," Incorrect. See help(epiorder)")
-      lab <- NULL}
+    { if (length(mode) > 1 & is.character(mode)) {
+      lab <- mode
+      } else {
+        cat("Mode:",mode," Incorrect. See help(epiorder)")
+        lab <- NULL
+        }
+    }
     )
+
     if ( ! is.null(lab) ) {
       dfname <- get_option("last_df")
       df=get(dfname)
@@ -263,25 +280,39 @@ epiorder <- function(var,mode="yesno",custom=NULL) {
       # test for type of levels  (otherwise calling it two time will erase all values)
       clevels <- levels(coldata)
       nlevels <- nlevels(coldata)
-      if (nlevels > 2) {
-         cat("epiorder is only for binary variables (with 2 categories)")
+      if (is.null(levels)) {
+        if (nlevels > 0) {
+          if (sort(clevels)[1] == "0" ) {
+            clevels <- c(1,0)
+          } else {  #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
+            clevels <- sort(clevels,decreasing = TRUE)
+          }
+        } else {
+          catret("Check your data to verify that you can transform",colname, "as factor")
+          lab <- NULL
+        }
+      } else {
+        clevels <- levels
+      }
+      if (! nlevels==length(clevels)) {
+         catret("Check your data to verify that number of categories is correct and match your recoding")
+         lab <- NULL
+      }
+      if (! length(lab)==length(clevels)) {
+        catret("Numbers of categories/levels must be equal to number of labels")
         lab <- NULL
-      } else if (sort(clevels)[1] == "0" ) {
-        clevels <- c(1,0)
-      } else {  #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
-        clevels <- sort(clevels,decreasing = TRUE)
       }
     }
   }
 
   if (! is.null(lab)) {
     coldata <- factor(coldata, levels = clevels , labels = lab, ordered = TRUE)
-    df[,colname] <- coldata
 
-    # assign(dfname,df,inherits = TRUE )
-
-    push.data(dfname,df)
-
+    if (update) {
+      df[,colname] <- coldata
+      # assign(dfname,df,inherits = TRUE )
+      push.data(dfname,df)
+    }
     bold(colfullname)
     normal(" Reordered with labels: ")
     catret(levels(coldata))

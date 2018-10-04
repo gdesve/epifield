@@ -4,14 +4,26 @@
 \alias{epiorder}
 \title{Reorder data for epi table ( 2by2 table).}
 \usage{
-epiorder(var, mode = "yesno", custom = NULL)
+epiorder(var, mode = "yesno", levels = NULL, update = TRUE)
 }
 \arguments{
 \item{var}{Variable to reorder (will be converted as factor).}
 
-\item{mode}{"Yesno"   "Yesno"  "10" "+-"}
+\item{mode}{Label plan for the new factor variable
+"yesno" for Yes, No
+"10"    for 1, 0
+"+-"    for +,-
+"truefalse"  for TRUE, FALSE
+or any set of two labels on the form c("A","B")}
 
-\item{custom}{Custom labels}
+\item{levels}{Custom set of levels as vector : c(1,0)
+This levels will replaced by the lables then levels and labels should have the same
+length and the same order}
+
+\item{update}{if TRUE (the default) Then the original dataset is updated with new value
+The recoded column is replaced by the returned value
+With this option, there is no need to reassign the retruned value,
+but original data are lost.}
 }
 \value{
 A vector reordered Can be nested as in \code{freq(epioredr(case))}

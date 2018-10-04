@@ -18,6 +18,8 @@
 #'
 #' @param countvar Variable to be aggregated
 #' @param byvar Indicator for wich sum will be calculated
+#' @param byvar2 Second Indicator for wich sum will be calculated
+#' @param byvar3 Third Indicator for wich sum will be calculated
 #'
 #' @return aggregated data
 #' @export
@@ -25,7 +27,7 @@
 #' @examples
 #' df <- data.frame("count"=c(4,5),"year"=c(2015,2016))
 #' sumby(count,year)
-sumby <- function(countvar,byvar) {
+sumby <- function(countvar,byvar,byvar2,byvar3 ) {
   r <- as.list(match.call())
 
   getvar(r$countvar)
@@ -33,14 +35,27 @@ sumby <- function(countvar,byvar) {
   # dfname <- get_option("last_df")
   getvar(r$byvar)
   varby <- getvar()
+  if (!missing(byvar2)) {
+    getvar(r$byvar2)
+    varby2 <- getvar()
+    colvar2 <- paste(",",deparse(getvarname() ))
+    varby2 <-paste(",", varby2)
+  } else {varby2<-"";colvar2<-""}
+  if (!missing(byvar3)) {
+    getvar(r$byvar3)
+    varby3 <- getvar()
+    colvar3 <- paste(",",deparse(getvarname() ) )
+    varby3 <-paste(",", varby3)
+  } else {varby3<-"";colvar3<-""}
 
-  texpr <- paste("aggregate(",varcount,",by=list(",varby,"),FUN=sum)" )
+  texpr <- paste("aggregate(",varcount,",by=list(",varby,varby2,varby3,"),FUN=sum)" )
     # this doesn't allow vector as parameters
     # texpr <- paste("aggregate(",r$countvar,"~",r$byvar,",FUN=sum, data =",dfname, ")" )
   res = eval(parse(text=texpr))
   byvar <- colname(r$byvar)
   countvar <- colname(r$countvar)
-  colnames(res) <- c(byvar,countvar)
+  col.names <- paste("c(",deparse(byvar),colvar2,colvar3,',"count")')
+  colnames(res) <- eval(parse(text=col.names))
   # r <- aggregate(countvar ~ byvar, FUN = sum, data = df,na.rm=TRUE)
   res
 }
