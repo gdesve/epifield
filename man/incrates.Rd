@@ -4,14 +4,14 @@
 \alias{incrates}
 \title{Calculate incidence rates with CI}
 \usage{
-incrates(labels, count, denom, per = 1e+05, conflvl = 0.95)
+incrates(count, denom, data, per = 1e+05, conflvl = 0.95)
 }
 \arguments{
-\item{labels}{categorie/labels/name of rows. Indicator variable containing labels}
-
 \item{count}{variable to be used as countfor calculating the incidence}
 
 \item{denom}{denominator to use for incidence rates}
+
+\item{data}{Optionnal data.frame containing the data}
 
 \item{per}{integer to use as unit per}
 
