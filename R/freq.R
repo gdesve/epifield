@@ -251,27 +251,28 @@ epiorder <- function(var,mode="yesno",levels=NULL,update=TRUE) {
   colfullname <- getvar()
   # colname <- as.character(substitute(var))
   if (! is.null(coldata) ) {
-    switch( mode ,
-            "yesno" = {
-      lab <- c("Yes","No")
-    } ,
-    "10" = {
-      lab <- c("1","0")
-    } ,
-    "+-" = {
-      lab <- c("+","-")
-    } ,
-    "truefalse" = {
-      lab <- c("TRUE","FALSE")
-    } ,
-    { if (length(mode) > 1 & is.character(mode)) {
+    if (length(mode) > 1 & is.character(mode)) {
       lab <- mode
-      } else {
+    } else {
+      switch( mode ,
+              "yesno" = {
+        lab <- c("Yes","No")
+      } ,
+      "10" = {
+        lab <- c("1","0")
+      } ,
+      "+-" = {
+        lab <- c("+","-")
+      } ,
+      "truefalse" = {
+        lab <- c("TRUE","FALSE")
+      } ,
+      {
         cat("Mode:",mode," Incorrect. See help(epiorder)")
         lab <- NULL
-        }
+      }
+      )
     }
-    )
 
     if ( ! is.null(lab) ) {
       dfname <- get_option("last_df")

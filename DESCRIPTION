@@ -1,7 +1,7 @@
 Package: epifield
 Type: Package
 Title: Functions for field epidemio
-Version: 0.1.0
+Version: 1.0
 Author: Gilles DESVE
 Maintainer: The package maintainer <gdesve@gmail.com>
 Description: epifiel is designed to help epidemiologist switching from EPI6/STATA to R.

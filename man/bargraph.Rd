@@ -4,12 +4,20 @@
 \alias{bargraph}
 \title{bargraph}
 \usage{
-bargraph(xvar, title)
+bargraph(xvar, title, ylab = "count", color = "#000099")
 }
 \arguments{
 \item{xvar}{As numbers, factors or text.}
 
 \item{title}{As character : main title}
+
+\item{ylab}{Y Axis label}
+
+\item{color}{Colors can be specified as color eg "red" "blue" or as a hexadecimal RGB triplet,
+such as "#0066CC". The first two digits are the level of red, the next two green, and the last two blue.
+The value for each ranges from 00 to FF in hexadecimal (base-16) notation,
+which is equivalent to 0 and 255 in base-10.
+For example, “#FFFFFF” is white and “#990000” is a deep red.}
 }
 \value{
 An array containing  resulting graph
