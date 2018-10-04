@@ -582,12 +582,19 @@ chartodate <- function(x,format="d/m/y",update=TRUE)  {
     varname <- getvarname()
     varfname <- getvar()
     if (!is.null(varx)) {
+      lvar <- sapply(varx,nchar)
+      lvarm <- mean(lvar,na.rm=TRUE)
       fdate <- format
+      if (lvarm>8) {
+        if (charcount("y",fdate)==1) {
+          fdate <- sub("y","yy",fdate)
+        }
+      }
       fdate <- sub("d","%d",fdate)
       fdate <- sub("m","%m",fdate)
-      fdate <- sub("y","%y",fdate)
-      fdate <- sub("yy","%Y",fdate)
       fdate <- sub("Y","%Y",fdate)
+      fdate <- sub("yy","%Y",fdate)
+      fdate <- sub("y","%y",fdate)
       dvar <- as.Date(varx,fdate)
       if (update & !is.null(df))  {
         df[,varname] <- dvar
