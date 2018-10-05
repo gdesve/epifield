@@ -145,7 +145,7 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
 #' Title
 #'
 #' @param xvar The numeric variable to recode
-#' @param tovar The new variable
+#' @param tovar Optionnaly, the new variable to create in the data frame
 #' @param by Either a numeric representing the size of each categorie
 #'        or a vector with the cutoff
 #' @param update if TRUE, the default then original data.frame is updated
@@ -155,9 +155,12 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
 #'
 #' @examples
 #' recode.by(gastro$age,agegr,by=10)
-recode.by  <- function(xvar, tovar, by=10 , update = TRUE) {
+recode.by  <- function(xvar, tovar="", by=10 , update = TRUE) {
   r <- as.list(match.call())
   vartorec <- getvar(r$xvar)
+  if (is.null(vartorec)) {
+    stop()
+  }
   vartorecname <- getvarname()
   vartorecfname <- getvar()
   df <- getdf()
@@ -180,10 +183,14 @@ recode.by  <- function(xvar, tovar, by=10 , update = TRUE) {
     tovar <- substitute(tovar)
     if (update) {
       if (is.data.frame(df)) {
-        cn <- colnames(df)
-        cn <- c(cn,tovar)
-        df <- cbind(df,groupvar)
-        colnames(df) <- cn
+        if (! tovar=="") {
+          cn <- colnames(df)
+          cn <- c(cn,tovar)
+          df <- cbind(df,groupvar)
+          colnames(df) <- cn
+        } else {
+          df[,vartorecname] <- groupvar
+        }
         push.data(dfname,df)
       }
     }
