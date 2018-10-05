@@ -94,6 +94,7 @@ COL   <- 8
 # internal used to reset the getvar system
 resetvar <- function() {
   epif_env$last_var <- ""
+  epif_env$last_isvar <- ""
   epif_env$last_varname <- ""
   epif_env$last_df <- ""
   epif_env$last_error <- NA
@@ -887,12 +888,14 @@ is.var <- function(what="") {
      if ( ! (what == "") ) {
        lsys <- sys.nframe()-1
        what <-glob2rx(what)
+       set_option("last_isvar","")
        for (i in lsys:0)  {
           lc <- ls(sys.frame(i),pattern=what)
           if ( length(lc) > 0 ) {
              r=try(eval(parse(text = lc[1]), sys.frame(i)),TRUE)
              if (! inherits(r, "try-error")) {
               lsfound <- TRUE
+              set_option("last_isvar",r)
              }
           }
        }
@@ -971,14 +974,15 @@ getvar <- function(what = NULL) {
       # We evaluate in case what was passed with quote
       # because we evaluate an expression we must avoid evaluating local var !
       # then we start with parent and go ahead until .GlobalEnv
-      lsys <- sys.nframe()-1
-      while (lsys >= 0) {
-         r <- try(eval.parent(ex,lsys-1),TRUE)
-         if (!inherits(r, "try-error")) {
-           return(r)
-           lsys <- -1
-         } else lsys <- lsys-1
-      }
+      return(get_option("last_isvar"))
+      # lsys <- sys.nframe()-1
+      # while (lsys >= 0) {
+      #    r <- try(eval.parent(ex,lsys-1),TRUE)
+      #    if (!inherits(r, "try-error")) {
+      #      return(r)
+      #      lsys <- -1
+      #    } else lsys <- lsys-1
+      # }
     } else {
       # var doesn't exist.. may be it's a formula ? We try to eval but we catch error
       continue <- FALSE
