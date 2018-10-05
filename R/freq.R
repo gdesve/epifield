@@ -306,15 +306,16 @@ epiorder <- function(var,
             first <- sort(clevels)[1]
             if (first == "0") {
               clevels <- c(1, 0)
-            } else {
-              #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
+            } else if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
               clevels <- sort(clevels, decreasing = TRUE)
+            } else {
+              lab <- NULL
             }
           } else {
             catret("Check your data to verify that you can transform",
                    colname,
                    "as factor")
-            lab <- NULL
+            coldata <- NULL
           }
         } else {
           clevels <- levels
@@ -323,35 +324,40 @@ epiorder <- function(var,
           catret(
             "Check your data to verify that number of categories is correct and match your recoding"
           )
-          lab <- NULL
+          coldata <- NULL
         }
-        if (!length(lab) == length(clevels)) {
-          catret("Numbers of categories/levels must be equal to number of labels")
-          lab <- NULL
+        if (!is.null(lab)) {
+          if (!length(lab) == length(clevels)) {
+             catret("Numbers of categories/levels must be equal to number of labels")
+             coldata <- NULL
+          }
         }
       }
     }
   }
-  if (!is.null(lab)) {
-    coldata <-
-      factor(coldata,
-             levels = clevels ,
-             labels = lab,
-             ordered = TRUE)
-
-    if (update) {
+  if (!is.null(coldata)) {
+    if (!is.null(lab)) {
+      coldata <-
+        factor(coldata,
+               levels = clevels ,
+               labels = lab,
+               ordered = TRUE)
+    }
+    if (update & is.data.frame(df)) {
       df[, colname] <- coldata
       # assign(dfname,df,inherits = TRUE )
       push.data(dfname, df)
-    }
-    bold(colfullname)
-    normal(" Reordered with labels: ")
-    catret(levels(coldata))
 
-    # exp <- paste0(substitute(var),"<- coldata")
-    # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
-    # r
-    # df
+      bold(colfullname)
+      normal(" Reordered with labels: ")
+      catret(levels(coldata))
+
+    }
+      # exp <- paste0(substitute(var),"<- coldata")
+      # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
+      # r
+      # df
+
   }
   if (!is.null(coldata)) invisible(coldata)
 }
