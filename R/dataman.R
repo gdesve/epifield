@@ -54,7 +54,7 @@ sumby <- function(countvar,byvar,byvar2,byvar3 ) {
   res = eval(parse(text=texpr))
   byvar <- colname(r$byvar)
   countvar <- colname(r$countvar)
-  col.names <- paste("c(",deparse(byvar),colvar2,colvar3,',"count")')
+  col.names <- paste("c(",deparse(byvar),colvar2,colvar3,',',deparse(countvar),'")')
   colnames(res) <- eval(parse(text=col.names))
   # r <- aggregate(countvar ~ byvar, FUN = sum, data = df,na.rm=TRUE)
   res
