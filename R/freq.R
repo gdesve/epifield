@@ -292,7 +292,9 @@ epiorder <- function(var,
 
       fvar <- is.factor(coldata)
       if ( fvar ) {
-          if (is.null(levels)) lab <- NULL
+          if (is.null(levels)) {
+            lab <- NULL
+          } else clevels <- levels
       } else {
 
         coldata <- factor(coldata)
