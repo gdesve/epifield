@@ -85,7 +85,7 @@ bargraph <-function(xvar,title,ylab="count", color ="#000099" )  {
   ggplot(data=df, aes(x=var) ) + geom_bar(color="white",fill=color) +
     expand_limits( y = 0) +
     scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
-    labs(x = varlab, y = "count") +
+    labs(x = varlab, y = ylab) +
     labs(title=title) + epitheme()
 }
 
