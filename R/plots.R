@@ -127,7 +127,7 @@ theme(plot.title=element_text(size=18), # ,face="bold"
 #' @examples
 #' savegraph("test")
 savegraph <- function(name,type=png) {
-    if (regexpr("png",name)>0) {
+    if (! regexpr("png",name)>0) {
       name<-paste0(name,'.png')
     }
     dev.copy(png,name)
