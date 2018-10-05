@@ -142,6 +142,58 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
   # invisible(df[,vartorecname])
 
 
+#' Title
+#'
+#' @param xvar The numeric variable to recode
+#' @param tovar The new variable
+#' @param by Either a numeric representing the size of each categorie
+#'        or a vector with the cutoff
+#' @param update if TRUE, the default then original data.frame is updated
+#'
+#' @return The new variable
+#' @export
+#'
+#' @examples
+#' recode.by(gastro$age,agegr,by=10)
+recode.by  <- function(xvar, tovar, by=10 , update = TRUE) {
+  r <- as.list(match.call())
+  vartorec <- getvar(r$xvar)
+  vartorecname <- getvarname()
+  vartorecfname <- getvar()
+  df <- getdf()
+  dfname <- get_option("last_df")
+  labellist <- NULL
+  if (is.numeric(vartorec)) {
+    if (length(by)==1) {
+      minv <- by * min(vartorec)%/%by
+      maxv <- max(vartorec)
+      maxv <- maxv + by - maxv%%by
+      breakslist <- seq(minv,maxv,by)
+      cutint <-function(x,by) {
+        t <- paste0(as.character(x),"-",as.character(x+by-1) )
+      }
+      labellist <- sapply(breakslist[-length(breakslist)],cutint,by)
+    } else breakslist <- by
+
+    # cut_interval
+    groupvar <- cut(vartorec,breaks=breakslist, labels=labellist)
+    tovar <- substitute(tovar)
+    if (update) {
+      if (is.data.frame(df)) {
+        cn <- colnames(df)
+        cn <- c(cn,tovar)
+        df <- cbind(df,groupvar)
+        colnames(df) <- cn
+        push.data(dfname,df)
+      }
+    }
+
+  } else {
+    catret("recode.by only accept numeric vector")
+  }
+
+  invisible(groupvar)
+}
 
 #' Title recode a var if a condition if true
 #'
