@@ -97,12 +97,14 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
    expdata.fname <- getvar()
+   expdata <- epiorder(expdata,update=FALSE)
 
    tot <- length(expdata)
 
    outdata <- getvar(r$out)
    outdata.name <- getvarname()
    outdata.fname <- getvar()
+   outdata <- epiorder(outdata,update=FALSE)
    # length to be verified
 
    # to get options
@@ -244,86 +246,112 @@ sumstats <- function(what,cond) {
 #' }
 #'
 #'
-epiorder <- function(var,mode="yesno",levels=NULL,update=TRUE) {
+epiorder <- function(var,
+                     mode = "yesno",
+                     levels = NULL,
+                     update = TRUE) {
   r <- as.list(match.call())
   coldata <- getvar(r$var)
   colname <- getvarname()
   colfullname <- getvar()
+  lab <- NULL
   # colname <- as.character(substitute(var))
-  if (! is.null(coldata) ) {
+  if (!is.null(coldata)) {
     if (length(mode) > 1 & is.character(mode)) {
       lab <- mode
     } else {
-      switch( mode ,
-              "yesno" = {
-        lab <- c("Yes","No")
-      } ,
-      "10" = {
-        lab <- c("1","0")
-      } ,
-      "+-" = {
-        lab <- c("+","-")
-      } ,
-      "truefalse" = {
-        lab <- c("TRUE","FALSE")
-      } ,
-      {
-        cat("Mode:",mode," Incorrect. See help(epiorder)")
-        lab <- NULL
-      }
+      switch(
+        mode ,
+        "yesno" = {
+          lab <- c("Yes", "No")
+        } ,
+        "auto" = {
+          lab <- ""
+        } ,
+        "10" = {
+          lab <- c("1", "0")
+        } ,
+        "+-" = {
+          lab <- c("+", "-")
+        } ,
+        "truefalse" = {
+          lab <- c("TRUE", "FALSE")
+        } ,
+        {
+          cat("Mode:", mode, " Incorrect. See help(epiorder)")
+          lab <- NULL
+        }
       )
     }
 
-    if ( ! is.null(lab) ) {
+    if (!is.null(lab)) {
       dfname <- get_option("last_df")
-      df=get(dfname)
-      coldata <- factor(coldata)
-      # test for type of levels  (otherwise calling it two time will erase all values)
-      clevels <- levels(coldata)
-      nlevels <- nlevels(coldata)
-      if (is.null(levels)) {
-        if (nlevels > 0) {
-          if (sort(clevels)[1] == "0" ) {
-            clevels <- c(1,0)
-          } else {  #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
-            clevels <- sort(clevels,decreasing = TRUE)
+      if (!dfname == "") {
+        df = get(dfname)
+      }
+
+      fvar <- is.factor(coldata)
+      if ( fvar ) {
+          if (is.null(levels)) lab <- NULL
+      } else {
+
+        coldata <- factor(coldata)
+        # test for type of levels  (otherwise calling it two time will erase all values)
+        clevels <- levels(coldata)
+        nlevels <- nlevels(coldata)
+        if (is.null(levels)) {
+          if (nlevels > 0) {
+            first <- sort(clevels)[1]
+            if (first == "0") {
+              clevels <- c(1, 0)
+            } else {
+              #  if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
+              clevels <- sort(clevels, decreasing = TRUE)
+            }
+          } else {
+            catret("Check your data to verify that you can transform",
+                   colname,
+                   "as factor")
+            lab <- NULL
           }
         } else {
-          catret("Check your data to verify that you can transform",colname, "as factor")
+          clevels <- levels
+        }
+        if (!nlevels == length(clevels)) {
+          catret(
+            "Check your data to verify that number of categories is correct and match your recoding"
+          )
           lab <- NULL
         }
-      } else {
-        clevels <- levels
-      }
-      if (! nlevels==length(clevels)) {
-         catret("Check your data to verify that number of categories is correct and match your recoding")
-         lab <- NULL
-      }
-      if (! length(lab)==length(clevels)) {
-        catret("Numbers of categories/levels must be equal to number of labels")
-        lab <- NULL
+        if (!length(lab) == length(clevels)) {
+          catret("Numbers of categories/levels must be equal to number of labels")
+          lab <- NULL
+        }
       }
     }
   }
-
-  if (! is.null(lab)) {
-    coldata <- factor(coldata, levels = clevels , labels = lab, ordered = TRUE)
+  if (!is.null(lab)) {
+    coldata <-
+      factor(coldata,
+             levels = clevels ,
+             labels = lab,
+             ordered = TRUE)
 
     if (update) {
-      df[,colname] <- coldata
+      df[, colname] <- coldata
       # assign(dfname,df,inherits = TRUE )
-      push.data(dfname,df)
+      push.data(dfname, df)
     }
     bold(colfullname)
     normal(" Reordered with labels: ")
     catret(levels(coldata))
 
-    invisible(coldata)
     # exp <- paste0(substitute(var),"<- coldata")
     # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
     # r
     # df
   }
+  if (!is.null(coldata)) invisible(coldata)
 }
 
 push.data <- function(dfname,df) {
