@@ -298,7 +298,8 @@ epiorder <- function(var,
       if ( fvar ) {
           if (is.null(levels)) {
             clevels <- levels(coldata)
-            if ( substr(toupper(sort(clevels)[1]),1,1) == "N" )  {
+            nlevels <- nlevels(coldata)
+            if (nlevels == 2 & substr(toupper(sort(clevels)[1]),1,1) == "N" )  {
                clevels <- clevels
             } else {
                lab <- NULL
@@ -313,7 +314,7 @@ epiorder <- function(var,
         clevels <- levels(coldata)
         nlevels <- nlevels(coldata)
         if (is.null(levels)) {
-          if (nlevels > 0) {
+          if (nlevels == 2 ) {
             first <- sort(clevels)[1]
             if (first == "0") {
               clevels <- c(0,1)
@@ -322,6 +323,13 @@ epiorder <- function(var,
             } else {
               lab <- NULL
             }
+          } else if (nlevels > 2) {
+            if (mode == "yesno" ) {
+              # we keep base factor
+              lab <- NULL
+            } else if (nlevels == length(mode) & nlevels == length(lab)) {
+              # we use the levels
+            } else lab <- NULL
           } else {
             catret("Check your data to verify that you can transform",
                    colname,
