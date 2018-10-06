@@ -120,7 +120,7 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
      t <- chisq.test(r)
      options("warn"=0)
      # check size of result table
-     bin <- (dim(r)==c(2,2)&&TRUE)
+     bin <- (dim(r)[1]==2 & dim(r)[2]==2)
      if (bin & fisher) {
        f <- fisher.test(r)$p.value
      } else {fisher <- FALSE}
