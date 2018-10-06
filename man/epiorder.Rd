@@ -4,7 +4,8 @@
 \alias{epiorder}
 \title{Reorder data for epi table ( 2by2 table).}
 \usage{
-epiorder(var, mode = "yesno", levels = NULL, update = TRUE)
+epiorder(var, mode = "yesno", levels = NULL, update = TRUE,
+  reverse = FALSE)
 }
 \arguments{
 \item{var}{Variable to reorder (will be converted as factor).}
@@ -24,6 +25,10 @@ length and the same order}
 The recoded column is replaced by the returned value
 With this option, there is no need to reassign the retruned value,
 but original data are lost.}
+
+\item{reverse}{if TRUE labels are reordered to better fit epidemiological tables
+with 1 before 0 , Yes before No etc...
+Other type of label are not changed, existing factor are not changed}
 }
 \value{
 A vector reordered Can be nested as in \code{freq(epioredr(case))}

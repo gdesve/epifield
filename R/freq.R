@@ -97,14 +97,14 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
    expdata.fname <- getvar()
-   expdata <- epiorder(expdata,update=FALSE)
+   expdata <- epiorder(expdata,update=FALSE,reverse=TRUE )
 
    tot <- length(expdata)
 
    outdata <- getvar(r$out)
    outdata.name <- getvarname()
    outdata.fname <- getvar()
-   outdata <- epiorder(outdata,update=FALSE)
+   outdata <- epiorder(outdata,update=FALSE, reverse=TRUE)
    # length to be verified
 
    # to get options
@@ -238,6 +238,9 @@ sumstats <- function(what,cond) {
 #'        The recoded column is replaced by the returned value
 #'        With this option, there is no need to reassign the retruned value,
 #'        but original data are lost.
+#' @param reverse if TRUE labels are reordered to better fit epidemiological tables
+#'        with 1 before 0 , Yes before No etc...
+#'        Other type of label are not changed, existing factor are not changed
 #'
 #' @return A vector reordered Can be nested as in \code{freq(epioredr(case))}
 #' @examples
@@ -249,7 +252,8 @@ sumstats <- function(what,cond) {
 epiorder <- function(var,
                      mode = "yesno",
                      levels = NULL,
-                     update = TRUE) {
+                     update = TRUE,
+                     reverse = FALSE) {
   r <- as.list(match.call())
   coldata <- getvar(r$var)
   colname <- getvarname()
@@ -263,19 +267,19 @@ epiorder <- function(var,
       switch(
         mode ,
         "yesno" = {
-          lab <- c("Yes", "No")
+          lab <- c("No","Yes")
         } ,
         "auto" = {
           lab <- ""
         } ,
         "10" = {
-          lab <- c("1", "0")
+          lab <- c("0","1")
         } ,
         "+-" = {
-          lab <- c("+", "-")
+          lab <- c("-","+")
         } ,
         "truefalse" = {
-          lab <- c("TRUE", "FALSE")
+          lab <- c("FALSE","TRUE")
         } ,
         {
           cat("Mode:", mode, " Incorrect. See help(epiorder)")
@@ -293,10 +297,17 @@ epiorder <- function(var,
       fvar <- is.factor(coldata)
       if ( fvar ) {
           if (is.null(levels)) {
-            lab <- NULL
-          } else clevels <- levels
+            clevels <- levels(coldata)
+            if ( substr(toupper(sort(clevels)[1]),1,1) == "N" )  {
+               clevels <- clevels
+            } else {
+               lab <- NULL
+            }
+          } else {
+            clevels <- levels
+            reverse <- FALSE
+          }
       } else {
-
         coldata <- factor(coldata)
         # test for type of levels  (otherwise calling it two time will erase all values)
         clevels <- levels(coldata)
@@ -305,9 +316,9 @@ epiorder <- function(var,
           if (nlevels > 0) {
             first <- sort(clevels)[1]
             if (first == "0") {
-              clevels <- c(1, 0)
+              clevels <- c(0,1)
             } else if ( substr(toupper(sort(clevels)[1]),1,1) == "N" ) {
-              clevels <- sort(clevels, decreasing = TRUE)
+              clevels <- sort(clevels)
             } else {
               lab <- NULL
             }
@@ -337,11 +348,14 @@ epiorder <- function(var,
   }
   if (!is.null(coldata)) {
     if (!is.null(lab)) {
+      if (reverse) {
+         clevels <- rev(clevels)
+         lab <- rev(lab)
+      }
       coldata <-
         factor(coldata,
                levels = clevels ,
-               labels = lab,
-               ordered = TRUE)
+               labels = lab)
     }
     if (update & is.data.frame(df)) {
       df[, colname] <- coldata
@@ -362,6 +376,46 @@ epiorder <- function(var,
     catret(r$var," is not a variable or data.frame column")
   }
 
+}
+
+#' Title
+#'
+#' @param xvar  The variable to unfactor
+#' @param levels The desired levels as numeric values given in the order where
+#' label appear
+#' @param update if TRUE, the default, the data.frame is automaticaly updated
+#' with the new numeric variable
+#'
+#' @return The unfactored variable
+#' @export
+#'
+#' @examples
+#' tvar<- c("Yes","No")
+#' tvar <- factor(tvar)
+#' unfactor(tvar)
+unfactor <- function(xvar , levels, update =TRUE) {
+  r <- as.list(match.call())
+  vartorec <- getvar(r$xvar)
+  if (is.null(vartorec)) {
+    stop()
+  }
+  vartorecname <- getvarname()
+  vartorecfname <- getvar()
+  df <- getdf()
+  dfname <- get_option("last_df")
+
+  if (missing(levels)) {
+    nlev <- length(unique(vartorec))
+    levels <- seq(0,nlev-1,1)
+  }
+  vartorec <- levels[vartorec]
+  if (update & is.data.frame(df)) {
+    df[, vartorecname] <- vartorec
+    # assign(dfname,df,inherits = TRUE )
+    push.data(dfname, df)
+
+  }
+  invisible(vartorec)
 }
 
 push.data <- function(dfname,df) {
