@@ -357,9 +357,11 @@ epiorder <- function(var,
       # r <- try(evalq(parse(text = exp), envir = df, enclos = .GlobalEnv),TRUE)
       # r
       # df
-
+    invisible(coldata)
+  } else {
+    catret(r$var," is not a variable or data.frame column")
   }
-  if (!is.null(coldata)) invisible(coldata)
+
 }
 
 push.data <- function(dfname,df) {

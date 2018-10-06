@@ -1054,7 +1054,8 @@ finddf <- function(varname) {
   dffound <- ""
   dflist <- list()
   while (j <= ndf) {
-    ifound <- grep(varname, names(get(.df[j])))
+    pat <- paste0("^",varname,"$")
+    ifound <- grep(pat, names(get(.df[j])))
     if (length(ifound) > 0) {
       nfound <- nfound + 1
       dflist[nfound] <- .df[j]
