@@ -65,8 +65,12 @@ freq <- function(...,missing=FALSE,quietly = FALSE) {
 #' @title
 #' Cross tabulation ( 2by2 table).
 #' @description
-#' \code{epitable} Display a cross tabulation of two binary variables optionnaly with
-#'  row or col percentages.
+#' \code{epitable} Display a cross tabulation of two variables optionnaly with
+#'  row or col percentages. Chi Square with associated p.value are calculated.
+#'  If table contain binary variable, then epiorder function is apply on the two variable
+#'  to get a resulting table compatible with usual epidemiology interpretation.
+#'  0/1 variables are transformed into Yes/No and Yes is displayed before No
+#'  Exposed Cases appear on upper left part of the table.
 #'
 #'
 #' @name epitable
@@ -78,19 +82,18 @@ freq <- function(...,missing=FALSE,quietly = FALSE) {
 #' @seealso \code{\link{freq}} for frequency distributions
 #' @importFrom stats chisq.test fisher.test
 #' @export
-#' @param exp  "Exposure" as numbers, factors or text.
+#' @param exp  "Exposure" as numbers, factors or text. short syntax is available
+#' see help(epifield)
 #' @param out  "Outcome" as numbers, factors or text
 #' @param missing Boolean if FALSE, missing are not included in the table.
 #'   A summary output of number of missing values is added at the end
 #' @param row  "Row percentages"
 #' @param col  "Col percentages"
-#' @param fisher TRUE by default, display the fisher exact probability
+#' @param fisher TRUE by default, display the fisher exact probability.
+#' If table is larger than 2*2 then Fisher is not calculated
 #' @return An array containing  values of \code{...}   \code{}
 #' @examples
-#' \dontrun{
-#' epitable(c(3,1,2,2,5))
-#' }
-#'
+#' #' epitable(c(1,1,2,2,1),c(3,3,4,4,4))
 #'
 epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
    r <- as.list(match.call())

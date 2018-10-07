@@ -54,9 +54,7 @@ logreg <- function(outvar,expvar, full= FALSE,quietly=FALSE) {
     r2=round(r,digits=get_option("stat_digits"))
     print(r2)
   }
-  result <- list()
-  result$call <- reg$call
-  result$OR <- r
-  names(dimnames(result$OR)) <- c("","Odds ratio with CI")
-  invisible(result)
+  reg$OR <- r
+  names(dimnames(reg$OR)) <- c("","Odds ratio with CI")
+  invisible(reg)
 }

@@ -10,7 +10,8 @@ epitable(out, exp, missing = FALSE, row = FALSE, col = FALSE,
 \arguments{
 \item{out}{"Outcome" as numbers, factors or text}
 
-\item{exp}{"Exposure" as numbers, factors or text.}
+\item{exp}{"Exposure" as numbers, factors or text. short syntax is available
+see help(epifield)}
 
 \item{missing}{Boolean if FALSE, missing are not included in the table.
 A summary output of number of missing values is added at the end}
@@ -19,20 +20,22 @@ A summary output of number of missing values is added at the end}
 
 \item{col}{"Col percentages"}
 
-\item{fisher}{TRUE by default, display the fisher exact probability}
+\item{fisher}{TRUE by default, display the fisher exact probability.
+If table is larger than 2*2 then Fisher is not calculated}
 }
 \value{
 An array containing  values of \code{...}   \code{}
 }
 \description{
-\code{epitable} Display a cross tabulation of two binary variables optionnaly with
- row or col percentages.
+\code{epitable} Display a cross tabulation of two variables optionnaly with
+ row or col percentages. Chi Square with associated p.value are calculated.
+ If table contain binary variable, then epiorder function is apply on the two variable
+ to get a resulting table compatible with usual epidemiology interpretation.
+ 0/1 variables are transformed into Yes/No and Yes is displayed before No
+ Exposed Cases appear on upper left part of the table.
 }
 \examples{
-\dontrun{
-epitable(c(3,1,2,2,5))
-}
-
+#' epitable(c(1,1,2,2,1),c(3,3,4,4,4))
 
 }
 \references{
