@@ -49,11 +49,15 @@ which2.envir <- function(what) {
 wich.envir <- function(what) {
   vlocal = 5
   cat("one :" , sys.nframe(), "\n")
-  cat("liste ", list=ls(pattern=what)  ,"\n"  )
+  cat("liste ", list=ls(sys.frame(-1),pattern=what)  ,"\n"  )
   cat(exists(what), "\n")
   which2.envir(what)
 }
 
+teval <-function(what,df) {
+
+  evalq(what,envir=df)
+}
 
 #internal function to retrieve dataset variables
 # use of lapply could be more efficient than loop ?
