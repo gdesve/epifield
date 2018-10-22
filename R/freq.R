@@ -100,14 +100,18 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
    expdata <- getvar(r$exp)
    expdata.name <- getvarname()
    expdata.fname <- getvar()
-   expdata <- epiorder(expdata,update=FALSE,reverse=TRUE )
+   if (! is.null(expdata)) {
+    expdata <- epiorder(expdata,update=FALSE,reverse=TRUE )
+   }
 
    tot <- length(expdata)
 
    outdata <- getvar(r$out)
    outdata.name <- getvarname()
    outdata.fname <- getvar()
-   outdata <- epiorder(outdata,update=FALSE, reverse=TRUE)
+   if ( ! is.null(outdata)) {
+    outdata <- epiorder(outdata,update=FALSE, reverse=TRUE)
+   }
    # length to be verified
 
    # to get options
@@ -166,9 +170,10 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 
      # print stat result for interactive mode
      catret("")
-     cat("Chi2:",t$statistic,"(", round(t$p.value,digits = get_option("stat_digits")),")" )
+     cat("Chi2:",t$statistic,"(", pval(t$p.value,digits = get_option("stat_digits")),")" )
      if (fisher) {
-        cat(" Fisher exact :",round(f,digits = get_option("stat_digits")))
+
+        cat(" Fisher exact :",pval(f,digits = get_option("stat_digits")))
      }
      catret("")
      if (!missing) {
@@ -388,6 +393,17 @@ epiorder <- function(var,
   }
 
 }
+
+
+pval <-function(pvalue,digits) {
+  res <- round(pvalue,digits)
+  if (res==0) {
+    res <- paste0("< ",format(1/10^digits,scientific=FALSE) )
+  }
+  res
+}
+
+
 
 #' Title
 #'

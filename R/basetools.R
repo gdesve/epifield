@@ -1036,10 +1036,10 @@ getvar <- function(what = NULL) {
               call. = FALSE
             )
             return(NULL)
+        } else {
+          warning(paste(varname , "is not defined as variable or data.frame column"), call. = FALSE)
+          return(NULL)
         }
-      } else {
-            warning(paste(varname , "is not defined as variable or data.frame column"), call. = FALSE)
-            return(NULL)
       }
     } # var not exists
   } # not missing

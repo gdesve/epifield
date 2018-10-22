@@ -269,7 +269,7 @@ recode.if  <- function(xvar, condition, newvalue) {
   if (recoded) {
      push.data(dfname,df)
      invisible(newvar)
-  } else {newvar}
+  } else invisible(newvar)
 
 }
 
