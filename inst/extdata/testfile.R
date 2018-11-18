@@ -184,3 +184,28 @@ dat = data.frame(sCode = c("CA", "CA", "AC"))
 nrow(dat[dat$sCode == "CA",])
 length(dat$sCode[dat$sCode == "CA"])
 sum(which(dat$sCode == "CA"))
+
+hist(steg$age , plot=T)
+barplot(height = steg$age)
+
+my_hist=hist(steg$age , plot=F, breaks = pretty(steg$age))
+
+minx <- min(steg$age,na.rm = TRUE)
+maxx <- max(steg$age,na.rm = TRUE)
+cut = minx:maxx
+my_hist=hist(steg$age , plot=F, breaks = cut)
+
+# plot(steg$age,type='h')
+# my_hist$mids<-round(my_hist$mids)
+# barplot(my_hist$counts, names.arg = my_hist$mids , space=0, col = "#000099")
+
+maxy <- max(my_hist$count ,na.rm = TRUE)
+barplot(my_hist$counts, space=0, ylim= c(0,maxy*1.2) , xlim=c(2,maxx-(maxx/5)), col = "#000099" ,
+        axes=TRUE,
+        ylab="count" , main = "Frequency distribution\nGasto") #, xlab="Age")
+axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
+      labels = cut, col="white",col.tick="black")
+mtext("Age",side=1,line=2)  # adj = 0/1
+abline(h=0,lwd=2,)
+# plot.xy(xy.coords(c(-3,70),c(0,0)),type="l",lwd=3)
+

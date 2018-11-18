@@ -13,7 +13,6 @@
 #'
 #' @seealso \code{\link{bargraph}} for bar graph
 #' @export
-#' @import ggplot2
 #'
 #' @param xvar As numbers, factors or text.
 #' @param title As character : main title
@@ -35,14 +34,21 @@ histogram <- function(xvar, title, ylab="count" ,width=NULL, color="#000099"  ) 
   varlab <- getvarname()
   df <- getdf()
   if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
-  suppressWarnings( ggplot(data=df, aes(x=var) ) +
-#    geom_histogram(stat="count",binwidth = width, color="white",fill=color) +
-  geom_histogram(binwidth = width, color="white",fill=color) +
-    expand_limits( y = 0) +
-    scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
-    labs(x = varlab, y = ylab) +
-    labs(title=title) + epitheme()
-  )
+
+  minx <- min(var,na.rm = TRUE)
+  maxx <- max(var,na.rm = TRUE)
+  cut = minx:maxx
+  my_hist=hist(var , plot=F, breaks = cut)
+
+  maxy <- max(my_hist$count ,na.rm = TRUE)
+  barplot(my_hist$counts, space=0, ylim= c(0,maxy*1.2) , xlim=c(2,maxx-(maxx/5)), col = color ,
+          axes=TRUE,
+          ylab=ylab , main = title) #, xlab="Age")
+  axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
+       labels = cut, col="white",col.tick="black")
+  mtext(varlab,side=1,line=2)  # adj = 0/1
+  abline(h=0,lwd=2)
+
 }
 
 # epifield documentation using roxygen2
@@ -60,7 +66,6 @@ histogram <- function(xvar, title, ylab="count" ,width=NULL, color="#000099"  ) 
 #'
 #' @seealso \code{\link{histogram}} for bar graph
 #' @export
-#' @import ggplot2
 #'
 #' @param xvar As numbers, factors or text.
 #' @param title As character : main title
@@ -82,38 +87,22 @@ bargraph <-function(xvar,title,ylab="count", color ="#000099" )  {
   if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
 
   var <- as.factor((var))
-  ggplot(data=df, aes(x=var) ) + geom_bar(color="white",fill=color) +
-    expand_limits( y = 0) +
-    scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
-    labs(x = varlab, y = ylab) +
-    labs(title=title) + epitheme()
+  var_count <- table(var)
+  maxy <- max(var_count)
+
+  barplot(var_count,ylim= c(0,maxy*1.2),col = color , ylab = ylab, main =title )
+  mtext(varlab,side=1,line=2)
+  abline(h=0,lwd=1)
+
+
+  # ggplot(data=df, aes(x=var) ) + geom_bar(color="white",fill=color) +
+  #   expand_limits( y = 0) +
+  #   scale_y_continuous(expand = c(0, 0) , limits = c(0,NA)  ) +
+  #   labs(x = varlab, y = ylab) +
+  #   labs(title=title) + epitheme()
 }
 
-epitheme <- function() {
 
-theme(plot.title=element_text(size=18), # ,face="bold"
-     axis.text.x=element_text(size=10),
-     axis.text.y=element_text(size=12),
-     axis.title.x=element_text(size=16),
-     axis.title.y=element_text(size=16),
-     axis.line = element_line(color = "black"),
-
-     #panel.ontop = TRUE , # line on top of graph
-     #panel.grid.major.y = element_line(color="white",size=0.5),
-     #panel.grid.minor.y = element_line(color="white",size=0.5),
-
-     # panel.spacing.y = 1 ,
-     panel.background = element_blank(),
-     # panel.background = element_rect(fill = "white"),
-
-     panel.grid.major = element_line(colour = "white", size=0),
-     panel.grid.minor = element_line(colour = "white", size=0)
-  )
-
-}
-
-#ggplot(cars, aes(x=speed,y=dist), color="blue")+geom_point()+geom_smooth()+
-#  labs(title="Scatterplot", x="Speed", y="Distance") + theme1
 
 #' Title
 #'
