@@ -28,7 +28,7 @@
 #' #' @examples
 #' histogram(c(3,1,2,2,5))
 #'
-histogram <- function(xvar, title, ylab="count" ,width=NULL, color="#000099"  ) {
+histogram <- function(xvar, title, ylab="count" ,width=1, color="#000099"  ) {
   r <- as.list(match.call())
   var <- getvar(r$xvar)
   varlab <- getvarname()
@@ -37,11 +37,16 @@ histogram <- function(xvar, title, ylab="count" ,width=NULL, color="#000099"  ) 
 
   minx <- min(var,na.rm = TRUE)
   maxx <- max(var,na.rm = TRUE)
-  cut = minx:maxx
+  minx <- minx - (minx%%width)
+  maxx <- maxx + (width - (maxx%%width) )
+
+  cut = seq(from=minx, to=maxx, by = width)
+
   my_hist=hist(var , plot=F, breaks = cut)
 
   maxy <- max(my_hist$count ,na.rm = TRUE)
-  barplot(my_hist$counts, space=0, ylim= c(0,maxy*1.2) , xlim=c(2,maxx-(maxx/5)), col = color ,
+  maxx <- maxx / width
+  barplot(my_hist$counts, space=0, ylim= c(0,maxy*1.2) , xlim=c(0,maxx-(maxx/5)), col = color ,
           axes=TRUE,
           ylab=ylab , main = title) #, xlab="Age")
   axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,

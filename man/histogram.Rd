@@ -4,8 +4,7 @@
 \alias{histogram}
 \title{histogram}
 \usage{
-histogram(xvar, title, ylab = "count", width = NULL,
-  color = "#000099")
+histogram(xvar, title, ylab = "count", width = 1, color = "#000099")
 }
 \arguments{
 \item{xvar}{As numbers, factors or text.}

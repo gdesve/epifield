@@ -30,4 +30,4 @@ Collate:
     'dataman.R'
     'stats.R'
     'checkmissing.R'
-    'bplot.R'
+    
