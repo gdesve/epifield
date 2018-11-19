@@ -13,6 +13,7 @@
 #'
 #' @seealso \code{\link{bargraph}} for bar graph
 #' @export
+#' @importFrom graphics abline axis barplot hist mtext
 #'
 #' @param xvar As numbers, factors or text.
 #' @param title As character : main title
