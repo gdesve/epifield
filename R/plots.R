@@ -51,7 +51,7 @@ histogram <- function(xvar, title, ylab="count" ,width=1, color="#000099"  ) {
           axes=TRUE,
           ylab=ylab , main = title) #, xlab="Age")
   axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
-       labels = cut, col="white",col.tick="black")
+       labels = cut, col="white",col.ticks="black")
   mtext(varlab,side=1,line=2)  # adj = 0/1
   abline(h=0,lwd=2)
 
