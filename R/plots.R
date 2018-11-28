@@ -50,19 +50,23 @@ histogram <- function(xvar, title, ylab="count" , xlab,by='days', width=1, color
      maxx <- maxx + (width - (maxx%%width)) -1
      cut <-  seq(from=minx, to=maxx, by = width)
   } else {
-    # by
     size <- maxx - minx
     if (size > (365*3)) {
-      cut <- "years"
-      fmt <- "%Y"
+        cut <- "years"
+        fmt <- "%Y"
     } else if (size > 365 ) {
-      cut <- "months"
-      fmt <- "%m"
+        cut <- "months"
+        fmt <- "%m-%Y"
     } else {
-      cut <- "days"
-      fmt <- "%d-%m"
-      }
+        cut <- "days"
+        fmt <- "%d-%m"
+    }
+    if (! missing(by)) {
+      cut <- by
+    }
   }
+
+
 
   my_hist <- hist(var , plot=F, breaks = cut, include.lowest = TRUE)
   maxy <- max(my_hist$count ,na.rm = TRUE)
