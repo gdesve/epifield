@@ -50,19 +50,23 @@ histogram <- function(xvar, title, ylab="count" , xlab,by='days', width=1, color
      maxx <- maxx + (width - (maxx%%width)) -1
      cut <-  seq(from=minx, to=maxx, by = width)
   } else {
-    # by
     size <- maxx - minx
     if (size > (365*3)) {
-      cut <- "years"
-      fmt <- "%Y"
+        cut <- "years"
+        fmt <- "%Y"
     } else if (size > 365 ) {
-      cut <- "months"
-      fmt <- "%m"
+        cut <- "months"
+        fmt <- "%m-%Y"
     } else {
-      cut <- "days"
-      fmt <- "%d-%m"
-      }
+        cut <- "days"
+        fmt <- "%d-%m"
+    }
+    if (! missing(by)) {
+      cut <- by
+    }
   }
+
+
 
   my_hist <- hist(var , plot=F, breaks = cut, include.lowest = TRUE)
   maxy <- max(my_hist$count ,na.rm = TRUE)
@@ -80,7 +84,7 @@ histogram <- function(xvar, title, ylab="count" , xlab,by='days', width=1, color
   barplot(my_hist$counts, names.arg = my_hist$labs , ylim= c(0,maxy*1.2) ,space=0,
           col = color, ylab=ylab , main = title )
 
-  axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
+  axis(side=1, line=0.1, at=(0.5:(length(my_hist$breaks)-1.5)),lwd=2,lwd.ticks = 1,
        col="white",col.ticks="black", labels=FALSE)
 
   mtext(xlab,side=1,line=2)  # adj = 0/1
