@@ -18,6 +18,9 @@
 #' @param xvar As numbers, factors or text.
 #' @param title As character : main title
 #' @param ylab Y axis label
+#' @param xlab X axis label
+#' @param by   For date values by parameters allows to plot histogram "by" days,months or years
+#'
 #' @param width numeric, define width of each bar using the unit of the variable
 #'        width = 5 to have histogram of age by 5 years
 #' @param color Colors can be specified as color eg "red" "blue" or as a hexadecimal RGB triplet,
@@ -29,32 +32,60 @@
 #' #' @examples
 #' histogram(c(3,1,2,2,5))
 #'
-histogram <- function(xvar, title, ylab="count" ,width=1, color="#000099"  ) {
+histogram <- function(xvar, title, ylab="count" , xlab,by='days', width=1, color="#000099"  ) {
   r <- as.list(match.call())
   var <- getvar(r$xvar)
   varlab <- getvarname()
+  if (missing(xlab) ) {
+    xlab <- varlab
+  }
   df <- getdf()
   if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
 
   minx <- min(var,na.rm = TRUE)
   maxx <- max(var,na.rm = TRUE)
-  minx <- minx - (minx%%width)
-  maxx <- maxx + (width - (maxx%%width) )
 
-  cut = seq(from=minx, to=maxx, by = width)
+  if (! inherits(var,'Date') ) {
+     minx <- minx - (minx%%width) -1
+     maxx <- maxx + (width - (maxx%%width)) -1
+     cut <-  seq(from=minx, to=maxx, by = width)
+  } else {
+    # by
+    size <- maxx - minx
+    if (size > (365*3)) {
+      cut <- "years"
+      fmt <- "%Y"
+    } else if (size > 365 ) {
+      cut <- "months"
+      fmt <- "%m"
+    } else {
+      cut <- "days"
+      fmt <- "%d-%m"
+      }
+  }
 
-  my_hist=hist(var , plot=F, breaks = cut)
-
+  my_hist <- hist(var , plot=F, breaks = cut, include.lowest = TRUE)
   maxy <- max(my_hist$count ,na.rm = TRUE)
-  maxx <- maxx / width
-  barplot(my_hist$counts, space=0, ylim= c(0,maxy*1.2) , xlim=c(0,maxx-(maxx/5)), col = color ,
-          axes=TRUE,
-          ylab=ylab , main = title) #, xlab="Age")
-  axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
-       labels = cut, col="white",col.ticks="black")
-  mtext(varlab,side=1,line=2)  # adj = 0/1
-  abline(h=0,lwd=2)
 
+  if (! inherits(var,'Date') ) {
+    maxx <- maxx / width
+    xlim <- c(0,maxx-(maxx/5))
+    my_hist$labs <- ceiling(my_hist$mids)
+  } else {
+    my_hist$lab <- as.Date.numeric(my_hist$mids, origin=as.Date("1970-01-01"))
+    my_hist$labs<-format(my_hist$lab,fmt)
+    xlim<-c(0,maxx)
+  }
+
+  barplot(my_hist$counts, names.arg = my_hist$labs , ylim= c(0,maxy*1.2) ,space=0,
+          col = color, ylab=ylab , main = title )
+
+  axis(side=1, line=0.1, at=(0.5:(length(cut)-0.5)),lwd=2,lwd.ticks = 1,
+       col="white",col.ticks="black", labels=FALSE)
+
+  mtext(xlab,side=1,line=2)  # adj = 0/1
+  # abline(h=0,lwd=2)
+  invisible(my_hist)
 }
 
 # epifield documentation using roxygen2

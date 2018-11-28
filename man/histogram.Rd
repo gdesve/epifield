@@ -4,7 +4,8 @@
 \alias{histogram}
 \title{histogram}
 \usage{
-histogram(xvar, title, ylab = "count", width = 1, color = "#000099")
+histogram(xvar, title, ylab = "count", xlab, by = "days", width = 1,
+  color = "#000099")
 }
 \arguments{
 \item{xvar}{As numbers, factors or text.}
@@ -12,6 +13,10 @@ histogram(xvar, title, ylab = "count", width = 1, color = "#000099")
 \item{title}{As character : main title}
 
 \item{ylab}{Y axis label}
+
+\item{xlab}{X axis label}
+
+\item{by}{For date values by parameters allows to plot histogram "by" days,months or years}
 
 \item{width}{numeric, define width of each bar using the unit of the variable
 width = 5 to have histogram of age by 5 years}

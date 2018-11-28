@@ -275,16 +275,16 @@ recode.if  <- function(xvar, condition, newvalue) {
 
 
 
-#' Title  eval an expression looking at default dataset
-#'
-#' @param expr  An expression to be evaluated
-#' @param env   An otionnal environnement to evaluate expr
-#'
-#' @return  Result of expression evaluation
-#' @export
-#'
-#' @examples
-#' eval_expr(5>4)
+# Title  eval an expression looking at default dataset
+#
+# @param expr  An expression to be evaluated
+# @param env   An otionnal environnement to evaluate expr
+#
+# @return  Result of expression evaluation
+# @export
+#
+# @examples
+# eval_expr(5>4)
 eval_expr <- function(expr,env)  {
 
   r <- try(mexpr <- mode(expr),TRUE)

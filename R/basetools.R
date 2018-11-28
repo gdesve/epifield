@@ -488,19 +488,19 @@ select <- function(expr) {
   }
 }
 
-#' right
-#'
-#' Extract x rigth characters from a text
-#'
-#' @param text Text to extract from
-#' @param num_char Number of char to extract from rigth
-#'
-#' @return  \code{num_char} extracted characters
-#' @examples
-#' \dontrun{
-#' right("dummy_test",4)
-#' }
-#'
+# right
+#
+# Extract x rigth characters from a text
+#
+# @param text Text to extract from
+# @param num_char Number of char to extract from rigth
+#
+# @return  \code{num_char} extracted characters
+# @examples
+# \dontrun{
+# right("dummy_test",4)
+# }
+#
 right = function (text, num_char) {
   substr(text, nchar(text) - (num_char - 1), nchar(text))
 }
