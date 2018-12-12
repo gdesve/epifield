@@ -677,6 +677,7 @@ normal <- function(...) {
 #' @param factorise Indicate if character variable should be read as factor. If false, the default
 #' The column is read as character without transformation. Further transformation can be done
 #' with factor base function or with epiorder function.
+#' @param lowercase If TRUE, variable names are set to lowercase otherwise they are not changed
 #' @param label Label to be added as attribute to data.frame. This label will be used as description
 #' @examples
 #' fil <- tempfile(fileext = ".data")
@@ -686,7 +687,7 @@ normal <- function(...) {
 #' unlink(fil) # tidy up
 #'
 
-read <- function(filename = "", factorise = FALSE, label = NULL) {
+read <- function(filename = "", factorise = FALSE, lowercase= FALSE, label = NULL) {
   # no file ? choose one
   if (filename == "") {
     catret("retrieving file tree...please wait.")
@@ -731,7 +732,7 @@ read <- function(filename = "", factorise = FALSE, label = NULL) {
         message("Package foreign required")
       }
       df <- foreign::read.epiinfo(filename)
-    } else if (ext == "rda") {
+    } else if (ext == "rda" | ext == "rdata" ) {
       # load return name and load content into selected env
       df <- load(filename)
       df <- get(df)
@@ -743,6 +744,9 @@ read <- function(filename = "", factorise = FALSE, label = NULL) {
     }
     if (is.data.frame(df)) {
       fileatt <- dim(df)
+      if (lowercase) {
+         names(df)<-casefold(names(df))
+      }
       cat("File ", filename, " loaded. \n")
       cat(fileatt[1],
           "Observations of ",

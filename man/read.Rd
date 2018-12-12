@@ -4,7 +4,8 @@
 \alias{read}
 \title{@title Read a data.frame from disk into memory}
 \usage{
-read(filename = "", factorise = FALSE, label = NULL)
+read(filename = "", factorise = FALSE, lowercase = FALSE,
+  label = NULL)
 }
 \arguments{
 \item{filename}{Name of file to be read. Type is defined by extension}
@@ -12,6 +13,8 @@ read(filename = "", factorise = FALSE, label = NULL)
 \item{factorise}{Indicate if character variable should be read as factor. If false, the default
 The column is read as character without transformation. Further transformation can be done
 with factor base function or with epiorder function.}
+
+\item{lowercase}{If TRUE, variable names are set to lowercase otherwise they are not changed}
 
 \item{label}{Label to be added as attribute to data.frame. This label will be used as description}
 }
