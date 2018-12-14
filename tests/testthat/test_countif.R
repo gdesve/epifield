@@ -7,17 +7,17 @@ test_that("Count produce nbrows for data.frame", {
 
 
 test_that("Count produce nb of selected rows for data.frame", {
-  expect_equal(countif(test$age>50),3)
+  expect_equal(countif(test$age>50),2)
 })
 
 test_that("Count produce nb of selected rows for data.frame", {
   setdata("test")
-  expect_equal(countif(age>50),3)
+  expect_equal(countif(age>50),2)
 })
 
 test_that("Count complex logic for data.frame", {
   setdata("test")
-  expect_equal(countif(age>50 & sex == 1),1)
+  expect_equal(countif(age>50 & sex == 1),0)
 })
 
 

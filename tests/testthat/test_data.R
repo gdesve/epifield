@@ -13,3 +13,8 @@ test_that("Drop dataframe var", {
   expect_true( ! is.element("age",colnames(test) ) )
 })
 
+test_that("Sumby sum a numerical variable by combination of one or more categorical variables", {
+  data(test)
+  r <- sumby(test$age,test$sex)
+  expect_equal(r$age[1],181)
+})

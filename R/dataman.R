@@ -48,15 +48,13 @@ sumby <- function(countvar,byvar,byvar2,byvar3 ) {
     varby3 <-paste(",", varby3)
   } else {varby3<-"";colvar3<-""}
 
-  texpr <- paste("aggregate(",varcount,",by=list(",varby,varby2,varby3,"),FUN=sum)" )
-    # this doesn't allow vector as parameters
-    # texpr <- paste("aggregate(",r$countvar,"~",r$byvar,",FUN=sum, data =",dfname, ")" )
+  texpr <- paste("aggregate(",varcount,",by=list(",varby,varby2,varby3,"),FUN=sum,na.rm=TRUE)" )
+
   res = eval(parse(text=texpr))
   byvar <- colname(r$byvar)
   countvar <- colname(r$countvar)
   col.names <- paste("c(",deparse(byvar),colvar2,colvar3,',',deparse(countvar),')')
   colnames(res) <- eval(parse(text=col.names))
-  # r <- aggregate(countvar ~ byvar, FUN = sum, data = df,na.rm=TRUE)
   res
 }
 
