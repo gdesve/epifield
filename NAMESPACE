@@ -2,6 +2,7 @@
 
 export("%and%")
 export("%or%")
+export(CC)
 export(attack.rate)
 export(bargraph)
 export(chartodate)

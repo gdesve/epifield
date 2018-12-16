@@ -23,7 +23,7 @@ checkmissing <- function(what, ..., sort=FALSE,showall=FALSE ) {
   i <- match("showall",names(r))
   if (!is.na(i)) r[i]<-NULL
 
-  r[1]<-NULL
+  r[1]<-NULL    # this suppress the first argument (function name)
 
   if (missing(what)) {
     what <- getdata()
@@ -40,17 +40,20 @@ checkmissing <- function(what, ..., sort=FALSE,showall=FALSE ) {
       showall <- TRUE
       for (i in 1:nb) {
          name <- r[[i]]
+         # if vars is long syntax then as.character doesn't work   XXX
          vars[i] <- as.character(name)
       }
+
     }
   }
-
+  # if df was passed don't try to get var  with getvar because of ambigous names
   if ( length(vars) > 0 ) {
      name <- getvar(vars[[1]])
      df <- getdf()
   }
 
-  effectif = nrow(df);
+  # all this as to be restructured to accept vector (and df to be used as df[i]) XXX
+  effectif = nrow(df);  # var1 if single var
 
   res1  = list();
   i <- 0

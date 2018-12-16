@@ -170,10 +170,10 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 
      # print stat result for interactive mode
      catret("")
-     cat("Chi2:",t$statistic,"(", pval(t$p.value,digits = get_option("stat_digits")),")" )
+     cat("Chi2:",t$statistic,"(", fmtpval(t$p.value,digits = get_option("stat_digits")),")" )
      if (fisher) {
 
-        cat(" Fisher exact :",pval(f,digits = get_option("stat_digits")))
+        cat(" Fisher exact :",fmtpval(f,digits = get_option("stat_digits")))
      }
      catret("")
      if (!missing) {
@@ -395,7 +395,7 @@ epiorder <- function(var,
 }
 
 
-pval <-function(pvalue,digits) {
+fmtpval <-function(pvalue,digits) {
   res <- round(pvalue,digits)
   if (res==0) {
     res <- paste0("< ",format(1/10^digits,scientific=FALSE) )

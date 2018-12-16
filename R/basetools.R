@@ -209,16 +209,20 @@ setdata <- function(df = NULL) {
     }
   } else if (is.character(df)) {
     # si on passe le nom alors on le recupère direct
-    if (exists(df)) {
+    if (df=="") {
+       set_option("dataset", df)
+    } else if (exists(df)) {
       if (is.data.frame(get(df))) {
          set_option("dataset", df)
+         cat("setdata cleared")
       } else cat(df , " is not a data.frame")
-    } else if (df=="") set_option("dataset", df)
+    }
   }
   # pour finir verifier que df fait bien partie de l'environnement
 }
 
 # retrieve the default data.frame defined by setdata
+# would be nice if getdata return the df if there is only one in memory voir finddf ? XXX
 getdata <- function() {
   df <- get_option("dataset")  # epif_env$dataset
   if ( is.character(df) ) {
@@ -929,7 +933,7 @@ getvar <- function(what = NULL) {
   if (missing(what)) {
     return(get_option("last_var"))
   } else {
-
+    argpassed <- substitute(what)
     # should we look at var content ??
     # subst <- FALSE
     # if var is char content is used
@@ -941,6 +945,7 @@ getvar <- function(what = NULL) {
     # }
     # reset of global vars
     resetvar()
+    iscol <- FALSE
     dfname <- ""
     # Look at type of argument and get a working version of it
     r <- try(mwhat <- mode(what),TRUE)
@@ -959,15 +964,17 @@ getvar <- function(what = NULL) {
         varname <- as.character(what)
       } ,
       { # else
-        varname <- what
+        varname <- deparse(argpassed)
       }
     )
     # got it, we save the name
+
     epif_env$last_var <- varname
     epif_env$last_varname <- varname
     if ( (l <-pos("\\$",varname)) > 0) {
       epif_env$last_varname <- substring(varname,l+1)
       epif_env$last_df <- substr(varname,1,l-1)
+      iscol <- TRUE
     }
 
     # just create an expression with content
@@ -994,6 +1001,9 @@ getvar <- function(what = NULL) {
       if (!inherits(r, "try-error")) {
         # it's a formula ... it's evaluation is returned if not a function
         if ( ! mode(r) == "function" ) {
+          if ( ! iscol ) {
+            epif_env$last_df <- "formula"
+          }
           return(r)
         } else {
           #  in that situation we can look for column name... to be modified
@@ -1039,6 +1049,7 @@ getvar <- function(what = NULL) {
               ),
               call. = FALSE
             )
+            resetvar()
             return(NULL)
         } else {
           warning(paste(varname , "is not defined as variable or data.frame column"), call. = FALSE)

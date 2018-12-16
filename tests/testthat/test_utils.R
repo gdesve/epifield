@@ -39,9 +39,61 @@ test_that("File csv load with factor ", {
   expect_equal(is.factor(tira$sex),TRUE)
 })
 
-
-
 test_that("right of text correct", {
   expect_equal(right("dummy_test",4),"test")
+})
+
+
+test_that("getvar with vector", {
+  r <- getvar(c(1,2,3))
+  expect_equal(mode(r),"numeric")
+  expect_equal(get_option("last_varname"),"c(1, 2, 3)")
+  expect_equal(get_option("last_df"),"formula")
+})
+
+
+test_that("getvar with long syntax", {
+  data(test)
+  r <- getvar(test$age)
+  expect_equal(mode(r),"numeric")
+  expect_equal(get_option("last_varname"),"age")
+  expect_equal(get_option("last_df"),"test")
+})
+
+
+test_that("getvar with long syntax quotted", {
+  data(test)
+  r <- getvar("test$age")
+  expect_equal(mode(r),"numeric")
+  expect_equal(get_option("last_varname"),"age")
+  expect_equal(get_option("last_df"),"test")
+})
+
+
+test_that("getvar with short syntax", {
+  data(test)
+  r <- getvar(age)
+  expect_equal(mode(r),"numeric")
+  expect_equal(get_option("last_varname"),"age")
+  expect_equal(get_option("last_df"),"test")
+})
+
+test_that("getvar with short syntax and two df", {
+  data(test)
+  data(gastro)
+  expect_warning(r <- getvar(age))
+  expect_equal(mode(r),"NULL")
+  expect_equal(get_option("last_varname"),"")
+  expect_equal(get_option("last_df"),"")
+})
+
+test_that("getvar with short syntax and two df and setdata", {
+  data(test)
+  data(gastro)
+  setdata(test)
+  r <- getvar(age)
+  expect_equal(mode(r),"numeric")
+  expect_equal(get_option("last_varname"),"age")
+  expect_equal(get_option("last_df"),"test")
 })
 
