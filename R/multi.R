@@ -31,7 +31,7 @@ logreg <- function(outvar,expvar, full= FALSE,quietly=FALSE) {
      expvarlist <- deparse(substitute(expvar) )
   } else {expvarlist <- expvar}
 
-  df <- getdf()
+  df <- getlastdf()
   form <- paste0("glm(", outvar," ~ ",expvarlist, ", data = df, family = binomial(logit))")
   if (get_option("show_Rcode")) {
     catret(form)

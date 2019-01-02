@@ -220,3 +220,16 @@ mtext("Age",side=1,line=2)  # adj = 0/1
 abline(h=0,lwd=2,)
 # plot.xy(xy.coords(c(-3,70),c(0,0)),type="l",lwd=3)
 
+
+Rabbits <-
+  array(c(1, 1, 6, 5,
+          3, 4, 3, 6),
+        dim = c(2, 2, 2),
+        dimnames = list(
+          Delay = c("None", "1.5h"),
+          Response = c("Cured", "Died"),
+          Penicillin.Level = c("1/8", "1/4")))
+Rabbits
+## Classical Mantel-Haenszel test
+mantelhaen.test(Rabbits)
+

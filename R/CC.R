@@ -12,18 +12,6 @@ computeRiskCI <- function(risk, X1, N1, X2, N2)
   return(c(E2, E1));
 }
 
-# Comppute ODDS ratio
-# -----------------------------------------------------------------------------
-or <- function(.T)
-{
-  O <- (.T[1,1]/.T[1,2]) / (.T[2,1]/.T[2,2]);
-  x <- matrix(.T, 2, byrow = TRUE);
-  R <- fisher.test(x);
-  CIL <- R$conf.int[1];
-  CIH <- R$conf.int[2];
-  return(c(O, CIL, CIH));
-}
-
 
 fmt <- function(V) {
   as.numeric(as.character(V))
@@ -49,23 +37,6 @@ rr <- function(Tb)
   return(c(RR, RRCIL, RRCIH))
 }
 
-# rr2 <- function(Tb)
-# {
-#   TE = Tb[2,1]+Tb[2,2];
-#   TU = Tb[1,1]+Tb[1,2];
-#   CE = Tb[2,2];
-#   CU = Tb[1,2];
-#   TO = TE + TU;
-
-#   X   The number of disease occurence among exposed cohort.
-#   Y	  The number of disease occurence among non-exposed cohort.
-#   m1  The number of individuals in exposed cohort group.
-#   m2  The number of individuals in non-exposed cohort group.
-#   conf.level  Probability for confidence intervals. Default is 0.95.
-
-#   R <- riskratio(CE, CU, TE, TU, conf.level=0.95)
-#   return(c(R$estimate, R$conf.int[1], R$conf.int[2]))
-# }
 
 # ========================================================================
 # CASES CONTROLS STUDY
@@ -98,23 +69,6 @@ CS_STATS <- function(C)
   return(S);
 }
 
-computeORCI <- function(OR, a,b,c,d)
-{
-  LNO = log(OR)
-  R1 = sqrt((1/a)+(1/b)+(1/c)+(1/d))
-  CIL = exp(LNO - 1.96 * R1)
-  CIH = exp(LNO + 1.96 * R1)
-  return(c(CIL, CIH))
-}
-
-computeExactORCI <- function(a,b,c,d)
-{
-  x <- matrix(c(a, b, c, d), 2, byrow = TRUE);
-  R <- fisher.test(x);
-  CIL <- R$conf.int[1];
-  CIH <- R$conf.int[2];
-  return(c(CIL, CIH, R$p.value));
-}
 
 computeDiffRiskCI <- function(RE, RU, NE, NU)
 {
@@ -128,20 +82,6 @@ computeDiffRiskCI <- function(RE, RU, NE, NU)
   return(c(R2, R1));
 }
 
-GetStrateVector <- function(A) {
-  CE = A[2,2]    ; # Cases exposed
-  CU = A[1,2]    ; # Cases unexposed
-  HE = A[2,1]    ; # Healthy exposed
-  HU = A[1,1]    ; # Healthy unexposed
-
-  TE = CE + HE   ; # Total exposed
-  TU = CU + HU   ; # Total unexposed
-  TS = TE + TU   ; # Total strate
-  H  = HU + HE   ; # Total healthy
-  C  = CU + CE   ; # Total cases
-
-  c(CE, CU, HE, HU, TE, TU, TS, H, C)
-}
 
 CMHrr <- function(A, B)
 {
@@ -189,6 +129,351 @@ CMHrr <- function(A, B)
 
   return(c(rrmh, CIL, CIH));
 }
+
+
+CCInter.data.frame <- function(  x,
+                                 cases,
+                                 exposure,
+                                 by,
+                                 table = FALSE,
+                                 full = FALSE
+)
+{
+  L_LABELS1   <- c()
+  L_TAB       <- c()
+  L_CASES     <- c()
+  L_CONTROLS  <- c()
+  L_CIL       <- c()
+  L_CIH       <- c()
+  L_STATS     <- c()
+  L_ESTIMATE  <- c()
+
+  NB_TOTAL    <- 0
+
+  T.Controls  <- c()
+  T.Cases     <- c()
+  T.OR        <- c()
+  T.Marks     <- c("++","+-","-+","reference   --", "Total")
+  T.TCA <- 0
+  T.TCO <- 0
+
+
+  .strate <- as.factor(x[,by])
+  .strateError = "One of your strata has zero cases in the cells."
+
+  .df <- x
+  # Return labels of columns of the output data.frame
+  # ---------------------------------------------------------------------------
+  getColnames <- function() {
+    .Col1Label = sprintf("CCInter %s - %s by(%s)", cases, exposure, by)
+    c(.Col1Label, c("Cases","Controls","P.est.","Stats","95%CI-ll","95%CI-ul"))
+  }
+  getColnames2 <- function() {
+    c("P.estimate","Stats","95%CI-ll","95%CI-ul")
+  }
+
+  getPestNames <- function(ODD) {
+    if (ODD > 1.0) {
+      c("Odds ratio", "Attrib.risk.exp", "Attrib.risk.pop", NA, NA, NA)
+    } else {
+      c("Odds ratio", "Prev. frac. ex.", "Prev. frac. pop", NA, NA, NA)
+    }
+  }
+
+  getCrudeOR <- function(d) {
+    # df <- x[!is.na(x[cases]) & !is.na(x[exposure]) & !is.na(x[by]),
+    #            c(cases, exposure)]
+    .T <- table(d[,cases], d[,exposure])
+    .r = or(.T)
+    .r
+  }
+
+
+  # Returns labels for each level of 'by'
+  # ---------------------------------------------------------------------------
+  getRisksLabels <- function(.level) {
+    .label = sprintf("%s = %s", by, .level);
+    c(.label, "Exposed", "Unexposed", "Total", "Exposed %", "______________")
+  }
+
+  getMHLabels <- function() {
+    label2 = sprintf("Crude OR for %s", exposure);
+    label3 = sprintf("MH OR %s adjusted for %s", exposure, by);
+    c("MH test of Homogeneity",
+      label2, label3, "Adjusted/crude relative change")
+  }
+
+  # Loop on all levels of 'by' (strates)
+  # -----------------------------------------------------------------
+  getRRStats <- function() {
+    if (!is.factor(x[, cases])) {
+      .T = table(!x[, exposure], !x[, cases], .strate)
+    } else {
+      .d <- x
+      .d[, cases] <- 1 - (as.numeric(x[, cases])-1)
+      .d[, exposure] <- 1 - (as.numeric(x[, exposure])-1)
+      .T = table(.d[, exposure], .d[, cases], .strate)
+    }
+    .loop = length(levels(.strate))
+    .Compute = TRUE
+    .T <- .T1 <- toNumeric(.T, .loop)
+
+    retrieveLast <- function(.T) {
+      i <- length(.T[1,2,])
+      if (.T[1,1, i] == 0 | .T[2,1, i] == 0 | .T[1,2, i] == 0 | .T[2,2, i] == 0) {
+        msg <- sprintf("Stratum %d has values = 0 and has been removed", i)
+        warning(msg)
+        .T <- .T[, , -i]
+        .T <- retrieveLast(.T)
+      }
+      .T
+    }
+
+    .T <- retrieveLast(.T)
+    S_  <- summary(epi.2by2(.T, method = "case.control",
+                            outcome="as.columns",
+                            homogeneity = "woolf"))
+
+    .loop = length(.T[1,2,])
+    NB_LEVELS = .loop
+    .ind <- .loop:1
+    for (i in .loop:1) {
+      j <- .ind[[i]]
+      .level <- levels(.strate)[i]
+
+      A_CE = .T[1,1, i]    ; # Cases exposed
+      C_CU = .T[2,1, i]    ; # Cases unexposed
+      B_HE = .T[1,2, i]    ; # Healthy exposed
+      D_HU = .T[2,2, i]    ; # Healthy unexposed
+      T_EX <- A_CE + B_HE
+      T_UN <- C_CU + D_HU
+      T_CT <- B_HE + D_HU  ; # Total Controls
+
+      L_LABELS1 <- c(L_LABELS1, getRisksLabels(.level))
+
+      # CASES
+      # ------------------------------------------------------------
+      L_CASES <- c(L_CASES, NA, A_CE, C_CU);
+      TOTAL <-  A_CE + C_CU;
+      NB_TOTAL = NB_TOTAL + TOTAL;
+      EXPOSED_PC <-sprintf("%3.1f%%", (A_CE / TOTAL) * 100)
+      L_CASES <- c(L_CASES, TOTAL, EXPOSED_PC, NA);
+      # CONTROLS
+      # ------------------------------------------------------------
+      L_CONTROLS <- c(L_CONTROLS, NA, B_HE, D_HU);
+      TOTAL <-  B_HE + D_HU;
+      NB_TOTAL = NB_TOTAL + TOTAL;
+      EXPOSED_PC <- sprintf("%3.1f%%", (B_HE / TOTAL) * 100)
+      L_CONTROLS <- c(L_CONTROLS, TOTAL, EXPOSED_PC, NA);
+
+      if (i < 3) {
+        T.Cases <- c(T.Cases, A_CE, C_CU)
+        T.Controls <- c(T.Controls, B_HE, D_HU)
+        T.OR  <- c(T.OR, NA, NA)
+        T.TCA <- T.TCA + A_CE + C_CU
+        T.TCO <- T.TCO + B_HE + D_HU
+      }
+
+      # ODDS RATIO
+      # ------------------------------------------------------------
+      num <- NULL
+      .d <- S_$OR.strata.score
+      .d <- .d %>% mutate(num = 1:nrow(.d)) %>% arrange(desc(num))
+      ODD  <- .d[j, "est"]
+      .d <- S_$OR.strata.mle
+      .d <- .d %>% mutate(num = 1:nrow(.d)) %>% arrange(desc(num))
+      .CIL <- .d[j, "lower"]
+      .CIH <- .d[j, "upper"]
+      L_STATS <- c(L_STATS, ODD);
+      L_CIL = c(L_CIL, .CIL);
+      L_CIH = c(L_CIH, .CIH);
+
+      # print(i)
+      # if (i == 2) {
+      #   return(L_STATS)
+      # }
+      # P.est.
+      # -------------------------------------------------------------
+      L_ESTIMATE <- c(L_ESTIMATE, getPestNames(round(ODD, 8)))
+
+      # Attribuable Risk Ext.
+      # ------------------------------------------------------------
+      if (ODD >= 1.0) {
+        .d <- S_$AFest.strata.wald
+        .d <- .d %>% mutate(num = 1:nrow(.d)) %>% arrange(desc(num))
+        #R <- CC_AR(.T);
+        V_AR  = .d[j, "est"]   # Attrib.risk.exp
+        V_CIL = .d[j, "lower"] # Confidence interval low
+        V_CIH = .d[j, "upper"] # Confidence interval hight
+        L_STATS <- c(L_STATS, V_AR);
+        L_CIL = c(L_CIL, V_CIL, NA, NA, NA, NA);
+        L_CIH = c(L_CIH, V_CIH, NA, NA, NA, NA);
+
+        # Attribuable Risk Pop.
+        # ------------------------------------------------------------
+        .d <- S_$PAFest.strata.wald
+        .d <- .d %>% mutate(num = 1:nrow(.d)) %>% arrange(desc(num))
+        AFP <- .d[j, "est"]
+        L_STATS <- c(L_STATS, AFP, NA, NA, NA);
+      } else {
+        V_AR <- 1 - ODD
+        V_CIL <- 1 - .CIH
+        V_CIH <- 1 - .CIL
+        L_STATS <- c(L_STATS, V_AR);
+        L_CIL = c(L_CIL, V_CIL, NA, NA, NA, NA);
+        L_CIH = c(L_CIH, V_CIH, NA, NA, NA, NA);
+        # Prev.frac.pop ---------------------------------------------
+        Pe <- B_HE / T_CT
+        AFP <- Pe * (1-ODD)
+        L_STATS <- c(L_STATS, AFP, NA, NA, NA)
+      }
+    }
+
+    if (table == TRUE) {
+      T.Cases <- c(T.Cases, T.TCA)
+      T.Controls <- c(T.Controls, T.TCO)
+      T.OR  <- c(T.OR, NA)
+    }
+
+
+    # Number of obs
+    # ------------------------------------------------------------
+    L_CASES = c(L_CASES, NB_TOTAL);
+
+    # MISSING
+    # ------------------------------------------------------------
+    .nrow <- nrow(x)
+    MIS_TO = .nrow - NB_TOTAL;
+    MIS_PC = sprintf("%3.2f%s", (MIS_TO / .nrow)*100, '%');
+    L_CASES = c(L_CASES, MIS_TO);
+
+    L_LABELS1 <- c(L_LABELS1, "Number of obs", "Missing")
+    L_CONTROLS <- c(L_CONTROLS, NA, NA)
+    L_ESTIMATE <- c(L_ESTIMATE, NA, NA)
+    L_STATS <- c(L_STATS, NA, NA)
+    L_CIL <- c(L_CIL, NA, NA)
+    L_CIH <- c(L_CIH, NA, NA)
+    # print(L_STATS)
+    DF1 <- data.frame(L_LABELS1, L_CASES, L_CONTROLS, L_ESTIMATE, S2(L_STATS), S2(L_CIL), S2(L_CIH))
+    colnames(DF1) <- getColnames()
+
+    # return(DF1)
+    df <- x[!is.na(x[,exposure]),]
+    df <- df[!is.na(df[,by]),]
+    df <- df[!is.na(df[,cases]),]
+
+    .T <- table(df[,cases], df[,exposure], df[,by]);
+    .T <- toNumeric(.T, .loop)
+    R <- CC_STATS(.T);
+
+    # MH test of Homogeneity pvalue
+    # ------------------------------------------------------------
+    STAT = R$OR.homog$p.value;
+    L_STATS <- c(STAT);
+    #    return(R)
+
+    # Crude OR for exposure
+    # ------------------------------------------------------------
+    .ror <- getCrudeOR(df)
+    STAT = .ror[1]
+    CIL = .ror[2]
+    CIH = .ror[3]
+    L_STATS <- c(L_STATS, STAT);
+    L_CIL = c(NA, CIL);
+    L_CIH = c(NA, CIH);
+    OR.crude = STAT
+
+    # MH OR for exposure adjusted for by
+    # ------------------------------------------------------------
+    STAT = R$OR.mh.wald$est;
+    CIL = R$OR.mh.wald$lower
+    CIH = R$OR.mh.wald$upper
+    OR.mh = STAT
+
+    L_STATS <- c(L_STATS, STAT);
+    L_CIL = c(L_CIL, CIL, NA);
+    L_CIH = c(L_CIH, CIH, NA);
+
+    # Adjusted/crude relative change
+    # ------------------------------------------------------------
+    STAT = 100 * ((OR.mh - OR.crude)/OR.crude);
+    L_STATS <- c(L_STATS, STAT);
+
+    L_LABELS1 = getMHLabels()
+
+    DF2 <- data.frame(L_LABELS1, S2(L_STATS), S2(L_CIL), S2(L_CIH))
+    colnames(DF2) <- getColnames2()
+
+    if (table == TRUE) {
+      .Col1 <- sprintf("%s / %s", by, exposure)
+      T.Col <- c(.Col1, "Cases", "Controls", "OR")
+
+      P11 <- T.Cases[1] / (T.Cases[1]+T.Controls[1])
+      P10 <- T.Cases[2] / (T.Cases[2]+T.Controls[2])
+      P01 <- T.Cases[3] / (T.Cases[3]+T.Controls[3])
+      P00 <- T.Cases[4] / (T.Cases[4]+T.Controls[4])
+
+      # print(P11 - P10 - P01 + 1)
+      OR11 <- (P11/(1-P11)) / (P00/(1-P00))
+      OR10 <- (P10/(1-P10)) / (P00/(1-P00))
+      OR01 <- (P01/(1-P01)) / (P00/(1-P00))
+      T.OR <- c(round(OR11,2), round(OR10,2), round(OR01,2), NA, NA)
+
+      DF3 <- data.frame(T.Marks, T.Cases, T.Controls, T.OR)
+      colnames(DF3) <- T.Col
+
+      # -------------------- STATS -------------------------------------------
+      # local _inter = (`_rr10' -1) + (`_rr01' - 1) + 1
+      # inter = (`_rr11' - 1 ) - (`_rr10' -1) - (`_rr01' - 1)
+      .Labs <- c("Observed OR when exposed to both",
+                 "Expected OR if exposed to both and no interaction",
+                 "Interaction")
+      S.OBOR <- OR11
+      S.EXOR <- (OR10 - 1) + (OR01 - 1) + 1
+      S.INTR <- OR11 - S.EXOR
+
+      DF4 = data.frame(.Labs, c(round(S.OBOR,2), round(S.EXOR,2), round(S.INTR,2)))
+      colnames(DF4) <- c("Statistic","Value")
+
+    }
+    if (full == TRUE) {
+      if (.Compute == TRUE) {
+        ret <- list(df1 = DF1, df2=DF2, df1.align="lccrlrrr", df2.align="lccrrr")
+      } else {
+        ret <- list(df1 = DF1, df2=.strateError, df1.align="lccrlrrr", df2.align="lccrrr")
+      }
+      if (table == TRUE) {
+        if (.Compute == TRUE) {
+          ret <- list(df1 = DF1, df2=DF2, df1.align="lccrlrrr", df2.align="lccrrr",
+                      df3 = DF3, df4 = DF4)
+        } else {
+          ret <- list(df1 = DF1, df2=.strateError, df1.align="lccrlrrr", df2.align="lccrrr",
+                      df3 = DF3, df4 = DF4)
+        }
+      }
+    } else {
+      if (.Compute == TRUE) {
+        ret <- list(df1 = DF1, df2=DF2)
+      } else {
+        ret <- list(df1 = DF1, df2=.strateError)
+      }
+      if (table == TRUE) {
+        if (.Compute == TRUE) {
+          ret <- list(df1 = DF1, df2=DF2, df3 = DF3, df4 = DF4)
+        } else {
+          ret <- list(df1 = DF1, df2=.strateError, df3 = DF3, df4 = DF4)
+        }
+      }
+    }
+
+    ret
+
+  }
+
+  getRRStats()
+
+}
+
 
 MH_HomogeneityTest <- function(mht)
 {

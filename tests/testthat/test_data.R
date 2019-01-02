@@ -15,6 +15,19 @@ test_that("setdata correctly assigned by name", {
 }
 )
 
+test_that("setdata report an error if df invalide", {
+  data(test)
+  expect_error(setdata(bidon))
+}
+)
+
+
+test_that("setdata report an error if df name invalide", {
+  data(test)
+  expect_error(setdata("bidon"))
+}
+)
+
 test_that("setdata correctly cleared", {
   data(test)
   setdata(test)
@@ -22,6 +35,22 @@ test_that("setdata correctly cleared", {
   expect_equal(setdata(),"")
 }
 )
+
+test_that("getdata correctly retrieve a df", {
+  data(test)
+  setdata(test)
+  expect_equal(is.data.frame(getdata()),TRUE)
+  clear(test,noask=TRUE)
+}
+)
+
+test_that("getdata correctly retrieve a df", {
+  data(test)
+  setdata("")
+  expect_equal(is.data.frame(getdata()),TRUE)
+}
+)
+
 
 test_that("Rename dataframe var", {
   data(test)

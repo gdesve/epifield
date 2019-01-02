@@ -113,6 +113,10 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
     outdata <- epiorder(outdata,update=FALSE, reverse=TRUE)
    }
    # length to be verified
+   if (! length(outdata) == tot) {
+     stop(paste("all arguments must have the same length",outdata.name,"<>",expdata.name,
+                "verify that data comes from same datase" ))
+   }
 
    # to get options
    params <- names(r)
@@ -184,6 +188,70 @@ epitable <- function(out,exp,missing=FALSE,row=FALSE,col=FALSE,fisher=TRUE)  {
 }
 
 
+
+#' @title calculate odds ratio and confidence intervales based on fisher exact probability
+#' @name or
+#'
+#' @author Gilles Desve
+#' @references Based on: \emph{Epi6} and \emph{Stata} functionnality,
+#' available at \url{https://github.com/}.
+#'
+#' @seealso \code{\link{freq}} for frequency distributions
+#'
+#' @param A   A matrix or the first numer of a 2*2 table case exposed
+#' @param B   Second number of a 2*2 table  non case exposed
+#' @param C   Third number of a 2*2 table  control exposed
+#' @param D   Fourth number of a 2*2 table control non exposed
+#'
+#' @return a list with or, lci, uci
+#' @export
+#'
+#' @examples
+#' or(5,2,1,3)
+or <- function(A,B=NULL,C=NULL,D=NULL)
+{
+  # accept a matrix or 4 number
+  if (missing(B) | missing(C) | missing(D) ) {
+    if (is.matrix(A)) {
+      B <- A[1,2]
+      C <- A[2,1]
+      D <- A[2,2]
+      A <- A[1,1]
+    } else { stop("params should be a matrix or 2*2 values") }
+  }
+
+  # odds ratio
+  OR <- (A/C) / (B/D)
+
+  # confidence intervalle
+  SE = sqrt((1/A)+(1/B)+(1/C)+(1/D))
+  LCI = exp(log(OR) - 1.96 * SE)
+  UCI = exp(log(OR) + 1.96 * SE)
+
+  # exact confidence intervalle
+  R <- fisher.test(matrix(c(A,B,C,D),nrow = 2))
+  # Lower CI
+  LCI <- R$conf.int[1]
+  # Upper CI
+  UCI <- R$conf.int[2]
+  R<-list(OR=OR,LCI=LCI,UCI=UCI)
+  return(R)
+}
+
+computeRiskCI <- function(risk, X1, N1, X2, N2)
+{
+  A = ((N1-X1)/X1)/N1;
+  B = ((N2-X2)/X2)/N2;
+  R1 = log(risk) + (1.96*sqrt(A + B));
+  R2 = log(risk) - (1.96*sqrt(A + B));
+  E1 = exp(R1);
+  E2 = exp(R2);
+
+  return(c(E2, E1));
+}
+
+
+
 #' sumstats
 #'
 #' Produce a summary
@@ -204,7 +272,7 @@ sumstats <- function(what,cond) {
   if (! missing(cond)) {
     tcond <- deparse(substitute(cond))
     expr = paste0(colfullname,"[",tcond,"]")
-    df <- getdf()
+    df <- getlastdf()
     coldata <- eval_expr(expr,df)
   }
   if (!is.null(coldata)) {
@@ -297,7 +365,7 @@ epiorder <- function(var,
     }
 
     if (!is.null(lab)) {
-      dfname <- get_option("last_df")
+      dfname <- get_lastdfname()
       if (!dfname == "") {
         df = get(dfname)
       }
@@ -307,9 +375,12 @@ epiorder <- function(var,
           if (is.null(levels)) {
             clevels <- levels(coldata)
             nlevels <- nlevels(coldata)
-            if (nlevels == 2 & substr(toupper(sort(clevels)[1]),1,1) == "N" )  {
+            if (nlevels == 2 & (substr(toupper(sort(clevels)[1]),1,1) == "N" ) ){
                clevels <- clevels
-            } else {
+            } else if  (nlevels == 2 & (substr(toupper(sort(clevels)[1]),1,1) == "0" ) ) {
+               mode="10"
+               lab <- c("0","1")
+            }  else {
                lab <- NULL
             }
           } else {
@@ -428,8 +499,8 @@ unfactor <- function(xvar , levels, update =TRUE) {
   }
   vartorecname <- getvarname()
   vartorecfname <- getvar()
-  df <- getdf()
-  dfname <- get_option("last_df")
+  df <- getlastdf()
+  dfname <- get_lastdfname()
 
   if (missing(levels)) {
     nlev <- length(unique(vartorec))

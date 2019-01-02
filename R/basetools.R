@@ -74,37 +74,46 @@
 #' @source  Epiet case study
 "test"
 
-# global for epifield env to manage epifield options
-epif_env <- new.env(parent = emptyenv())
-
-epif_env$start <- 1
-epif_env$end <- 2
-epif_env$stat_digits <- 4
-epif_env$show_Rcode <- FALSE
-epif_env$select <- ""
-epif_env$last_error <- NA
-
-# constant used in tools
+# constant used in epifield tools
 SEP   <- "|"
 CROSS <- "+"
 LINE  <- "-"
 FIRST <- 18
 COL   <- 8
 
-# internal used to reset the getvar system
+# epifield envirronement used to manage epifield options
+epif_env <- new.env(parent = emptyenv())
+
+# options for epifield
+epif_env$start <- 1
+epif_env$end <- 2
+# default number of digit in stats output
+epif_env$stat_digits <- 4
+# default option controling output of R Code when usefull
+epif_env$show_Rcode <- FALSE
+
+# global to retrieve current and last selection in short syntax system
+# The current selection applied to the current dataframe
+epif_env$select <- ""
+
+# The last_error in epifield functions
+epif_env$last_error <- NA
+
+# internal used to reset the short syntax system
 resetvar <- function() {
-  epif_env$last_var <- ""
-  epif_env$last_isvar <- ""
-  epif_env$last_varname <- ""
-  epif_env$last_df <- ""
+  epif_env$last_var <- ""          # last argument object name (in long syntax)
+  epif_env$last_isvar <- ""        # last argument is a column name ?
+  epif_env$last_varname <- ""      # if yes, varname is the column name
+  epif_env$last_df <- ""           # if yes, df is the last dataframe
   epif_env$last_error <- NA
 }
 
+# retrieve the last short varname (dataframe column name)
 getvarname <- function()  { return(get_option("last_varname")) }
 
 #' get_option
 #'
-#' retrieve a package option
+#' retrieve an epifield package option or parameter
 #'
 #' @param op name of the option to retrieve
 #' @export
@@ -128,13 +137,17 @@ get_option <- function(op) {
   }
 }
 
-# to retrieve last_error from getvar system
+get_lastdfname <- function() {
+  get_option("last_df")
+}
+
+# to retrieve or set last_error from epifield
 last_error <- function(mess="")  {
-  lm <- get_option("last_error")
+  lastmessage <- get_option("last_error")
   if (! missing(mess)) {
     set_option("last_error",mess)
   }
-  lm
+  lastmessage
 }
 
 #' list_option
@@ -197,32 +210,48 @@ set_option <- function(op, value) {
 #'
 
 setdata <- function(df = NULL) {
-  if (missing(df)) {
+   # if argument is NULL setdata return the current default data frame
+   if (missing(df)) {
     return(get_option("dataset"))
-  } else if (is.data.frame(df)) {
-    # tester si le dataset est bien nommé et n'a pas été construit en direct
-    e <- as.character(substitute(df))
-    if (sum(match(ls.str(.GlobalEnv, mode = "list"), e), na.rm = TRUE) > 0) {
-      set_option("dataset", as.character(substitute(df)) )
+  } else {
+    # argument is a dataframe ?
+    m_df <- try(is.data.frame(df),TRUE)
+    if ( ! inherits(m_df, "try-error")) {
+      # df exists as an object
+      # if TRUE then it is a data frame
+      if (m_df) {
+        # setdata as a meaning only if the passed dataframe exist in environment
+        c_df <- as.character(substitute(df))
+        # the name is searched in global env
+        if (sum(match(ls.str(.GlobalEnv, mode = "list"), c_df), na.rm = TRUE) > 0) {
+          cat("Default data frame is now set to",c_df)
+          set_option("dataset", c_df )
+        } else {
+          stop("Data frame should exist in global environnment")
+        }
+      # df is not a data frame, if arg is character, we search for a dataset named df
+      } else if (is.character(df)) {
+        # if df is empty then we cancel the default dataframe
+        if (df=="") {
+           set_option("dataset", df)
+           cat("setdata cleared")
+        } else if (exists(df)) {
+          # an object named df exist, is it a data frame ?
+          if (is.data.frame(get(df))) {
+            set_option("dataset", df)
+            cat("Default data frame is now set to",df)
+          } else stop(df , " is not a data.frame")
+        } else stop(df , " doesn't exist in environment")  # no object with that name
+      }
     } else {
-      stop("erreur dataset name is incorrect")
-    }
-  } else if (is.character(df)) {
-    # si on passe le nom alors on le recupère direct
-    if (df=="") {
-       set_option("dataset", df)
-    } else if (exists(df)) {
-      if (is.data.frame(get(df))) {
-         set_option("dataset", df)
-         cat("setdata cleared")
-      } else cat(df , " is not a data.frame")
+      # a data frame was passed directly as argument
+      stop("Data frame should exist in global environnment")
     }
   }
-  # pour finir verifier que df fait bien partie de l'environnement
 }
 
 # retrieve the default data.frame defined by setdata
-# would be nice if getdata return the df if there is only one in memory voir finddf ? XXX
+# getdata return the df if there is only one in memory
 getdata <- function() {
   df <- get_option("dataset")  # epif_env$dataset
   if ( is.character(df) ) {
@@ -236,13 +265,51 @@ getdata <- function() {
   if ( ! is.data.frame(df)) {
     df <- NULL
   }
+  # if no dataframe set by default and one is available in global env, then we use it
+  if (is.null(df)) {
+    list_df <- names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+    ndf <- length(list_df)
+    if (ndf == 1) {
+      df <- get(list_df[1])
+    }
+  }
   df
 }
 
-# retrieve the last data.frame found for last call to getvar system
-getdf <- function() {
+# given a column name, finddf retrieve all df containing that column
+# mainly used by getvar in short syntax
+finddf <- function(varname) {
+  .df <-
+    names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
+  ndf <- length(.df)
+  j <- 1
+  nfound <- 0
+  dffound <- ""
+  dflist <- list()
+  while (j <= ndf) {
+    pat <- paste0("^",varname,"$")
+    ifound <- grep(pat, names(get(.df[j])))
+    if (length(ifound) > 0) {
+      nfound <- nfound + 1
+      dflist[nfound] <- .df[j]
+      # list of dataset containing varname
+      dffound <-
+        paste0(dffound, ifelse(dffound == "", "", ", "), .df[j])
+    }
+    j <- j + 1
+  }
+  r <- list()
+  r$count <- nfound
+  r$namelist <- dflist
+  r$namestring <- dffound
+  return(r)
+}
 
-  df <- get_option("last_df")  # epif_env$last_df
+
+# retrieve the last data.frame found for last call to getvar system
+getlastdf <- function() {
+
+  df <- get_lastdfname()  # epif_env$last_df
 
   if ( is.character(df) ) {
     if (! df == "") {
@@ -403,8 +470,10 @@ generate <- function(name, value) {
       push.data(dfname,df)
     }
   } else {
-    cat("To use generate, you should first set the default data.frame with sedata()")
+    cat("To use generate, if you have more than one data frame in memory,",
+         "then you should first set the default data.frame with sedata()")
   }
+
   invisible(r)
 }
 
@@ -424,9 +493,9 @@ dropvar <- function(varname) {
   vartodrop <- getvar(r$varname)
   if (! is.null(vartodrop) ) {
     # we collecte the data.frame and infos
-    df <- getdf()
+    df <- getlastdf()
     vartodropname <- getvarname()
-    dfname <- get_option("last_df")
+    dfname <- get_lastdfname()
 
     # we drop from df copy
     df[,vartodropname] <- NULL
@@ -486,7 +555,7 @@ select <- function(expr) {
       sdf <- df[r,]
       n <- nrow(sdf)
       push.data(dfname,sdf)
-      cat(dfname,"rows selected :", sl , "(",n,"rows)" )
+      cat(dfname,"Rows selected :", sl , "(",n,"rows)\n","Use select('') to clear the selection and to retrieve the original data " )
       invisible(sdf)
     }
   }
@@ -582,8 +651,8 @@ lpad <- function(value,
 chartodate <- function(x,format="d/m/y",update=TRUE)  {
     r <- substitute(x)
     varx <- getvar(r)
-    df <- getdf()
-    dfname <- get_option("last_df")
+    df <- getlastdf()
+    dfname <- get_lastdfname()
     varname <- getvarname()
     varfname <- getvar()
     if (!is.null(varx)) {
@@ -1060,33 +1129,6 @@ getvar <- function(what = NULL) {
   } # not missing
 }
 
-finddf <- function(varname) {
-  .df <-
-    names(Filter(isTRUE, eapply(.GlobalEnv, is.data.frame)))
-  ndf <- length(.df)
-  j <- 1
-  nfound <- 0
-  dffound <- ""
-  dflist <- list()
-  while (j <= ndf) {
-    pat <- paste0("^",varname,"$")
-    ifound <- grep(pat, names(get(.df[j])))
-    if (length(ifound) > 0) {
-      nfound <- nfound + 1
-      dflist[nfound] <- .df[j]
-      # list of dataset containing varname
-      dffound <-
-        paste0(dffound, ifelse(dffound == "", "", ", "), .df[j])
-    }
-    j <- j + 1
-  }
-  r <- list()
-  r$count <- nfound
-  r$namelist <- dflist
-  r$namestring <- dffound
-  return(r)
-}
-
 
 tab_line <- function(ncol, tot = FALSE, first=FIRST) {
   l1 <- replicate(LINE, first + 1)
@@ -1203,8 +1245,8 @@ rename <- function(oldname, newname) {
   if (! is.null(old) ) {
     old.fname <- getvar()
     old.name <- getvarname()
-    dfname <- get_option("last_df")
-    df <- getdf()
+    dfname <- get_lastdfname()
+    df <- getlastdf()
 
     newname <- as.character(substitute(newname))
 

@@ -32,7 +32,7 @@ sumby <- function(countvar,byvar,byvar2,byvar3 ) {
 
   getvar(r$countvar)
   varcount <- getvar()
-  # dfname <- get_option("last_df")
+  # dfname <- get_lastdfname()
   getvar(r$byvar)
   varby <- getvar()
   if (!missing(byvar2)) {
@@ -77,8 +77,8 @@ recode.value  <- function(xvar, oldvalue, newvalue) {
 
   if ( is.factor(vartorec) ) {
     # we change only the labels...
-    df <- getdf()
-    dfname <- get_option("last_df")
+    df <- getlastdf()
+    dfname <- get_lastdfname()
     nl <- nlevels(vartorec)
     lev = levels(vartorec)
     for (i in 1:nl) {
@@ -161,8 +161,8 @@ recode.by  <- function(xvar, tovar="", by=10 , update = TRUE) {
   }
   vartorecname <- getvarname()
   vartorecfname <- getvar()
-  df <- getdf()
-  dfname <- get_option("last_df")
+  df <- getlastdf()
+  dfname <- get_lastdfname()
   labellist <- NULL
   if (is.numeric(vartorec)) {
     if (length(by)==1) {
@@ -228,8 +228,8 @@ recode.if  <- function(xvar, condition, newvalue) {
   }
   newvaluetext <- deparse(newvalue)
   recoded <- FALSE
-  df <- getdf()
-  dfname <- get_option("last_df")
+  df <- getlastdf()
+  dfname <- get_lastdfname()
 
   condresult <- eval_expr(condtext,df)
 

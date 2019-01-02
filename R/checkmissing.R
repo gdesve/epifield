@@ -49,7 +49,7 @@ checkmissing <- function(what, ..., sort=FALSE,showall=FALSE ) {
   # if df was passed don't try to get var  with getvar because of ambigous names
   if ( length(vars) > 0 ) {
      name <- getvar(vars[[1]])
-     df <- getdf()
+     df <- getlastdf()
   }
 
   # all this as to be restructured to accept vector (and df to be used as df[i]) XXX

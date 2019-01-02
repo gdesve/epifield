@@ -39,7 +39,7 @@ histogram <- function(xvar, title, ylab="count" , xlab,by='days', width=1, color
   if (missing(xlab) ) {
     xlab <- varlab
   }
-  df <- getdf()
+  df <- getlastdf()
   if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
 
   minx <- min(var,na.rm = TRUE)
@@ -124,7 +124,7 @@ bargraph <-function(xvar,title,ylab="count", color ="#000099" )  {
   r <- as.list(match.call())
   var <- getvar(r$xvar)
   varlab <- getvarname()
-  df <- getdf()
+  df <- getlastdf()
   if ( missing(title) ) { title <- paste0("Distribution of ",getvar()) }
 
   var <- as.factor((var))

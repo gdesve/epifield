@@ -16,7 +16,7 @@
 incrates <- function(count,denom, data, per = 100000, conflvl = 0.95) {
       r <- as.list(match.call())
       if (missing(data)) {
-        data <- getdf()
+        data <- getlastdf()
         olddata <- ""
       } else {
         olddata <- setdata()
