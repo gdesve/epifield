@@ -3,7 +3,6 @@
 \docType{package}
 \name{epifield}
 \alias{epifield}
-\alias{epifield-package}
 \title{epifield}
 \description{
 Epi package is designed to help epidemiologiste by hiding some of the R complexity

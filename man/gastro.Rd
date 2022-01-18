@@ -4,7 +4,8 @@
 \name{gastro}
 \alias{gastro}
 \title{#title Gastroenteritidis outbreak in pensylvania}
-\format{A data frame with 103 rows and 32 variables:
+\format{
+A data frame with 103 rows and 32 variables:
 \describe{
   \item{id}{Sequential number}
   \item{dob}{Date of birth}
@@ -39,7 +40,8 @@
   \item{earlycase}{earlycase}
   \item{latecase}{latecase}
 
-}}
+}
+}
 \source{
 Alain Moren investigation & case study
 }

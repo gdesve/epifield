@@ -25,5 +25,7 @@ Calculate incidence rates with CI
 }
 \examples{
 dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
-incrates(dat$lab,dat$nb,dat$den)
+setdata(dat)
+incrates(nb,den, dat)
+
 }

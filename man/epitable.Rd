@@ -4,8 +4,7 @@
 \alias{epitable}
 \title{Cross tabulation ( 2by2 table).}
 \usage{
-epitable(out, exp, missing = FALSE, row = FALSE, col = FALSE,
-  fisher = TRUE)
+epitable(out, exp, missing = FALSE, row = FALSE, col = FALSE, fisher = TRUE)
 }
 \arguments{
 \item{out}{"Outcome" as numbers, factors or text}

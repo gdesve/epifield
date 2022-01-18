@@ -490,6 +490,7 @@ MH_HomogeneityTest <- function(mht)
 #' @param cases cases vector
 #' @param exposure vector
 #' @param full display all
+#' @param exact Compute an exact method
 #'
 #' @return The result
 #' @export

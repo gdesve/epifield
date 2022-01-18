@@ -17,7 +17,7 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 Collate: 
     'basetools.R'
@@ -31,4 +31,3 @@ Collate:
     'stats.R'
     'checkmissing.R'
     'CC.R'
-    

@@ -277,7 +277,7 @@ sumstats <- function(what,cond) {
   }
   if (!is.null(coldata)) {
     catret("Summary for",colfullname)
-    summary(coldata)
+    print(summary(coldata))
   }
 
 }

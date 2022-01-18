@@ -2,5 +2,6 @@
 ^inst/docs$
 ^testfile\.R$
 ^.*\.Rproj$
+^R\CC.R$
 ^\.Rproj\.user$
 ^eps\.*

@@ -752,6 +752,7 @@ normal <- function(...) {
 #' with factor base function or with epiorder function.
 #' @param lowercase If TRUE, variable names are set to lowercase otherwise they are not changed
 #' @param label Label to be added as attribute to data.frame. This label will be used as description
+#' @param ...  other standard read options
 #' @examples
 #' fil <- tempfile(fileext = ".data")
 #' cat("TITLE extra line", "2 3 5 7", "", "11 13 17", file = fil,
@@ -760,7 +761,7 @@ normal <- function(...) {
 #' unlink(fil) # tidy up
 #'
 
-read <- function(filename = "", factorise = FALSE, lowercase= FALSE, label = NULL) {
+read <- function(filename = "", factorise = FALSE, lowercase= FALSE, label = NULL,...) {
   # no file ? choose one
   if (filename == "") {
     catret("retrieving file tree...please wait.")
@@ -782,9 +783,9 @@ read <- function(filename = "", factorise = FALSE, lowercase= FALSE, label = NUL
       comma1 <- charcount(",", test[1])
       semicol1 <- charcount(";", test[1])
       if (comma1 > 0) {
-        df <- utils::read.csv(filename,as.is = !factorise)
+        df <- utils::read.csv(filename,as.is = !factorise,...)
       } else if (semicol1  > 0) {
-        df <- utils::read.csv2(filename,as.is = !factorise)
+        df <- utils::read.csv2(filename,as.is = !factorise,...)
       } else {
         red("Separator not identified in :")
         normal("\n")
@@ -1249,13 +1250,16 @@ rename <- function(oldname, newname) {
     df <- getlastdf()
 
     newname <- as.character(substitute(newname))
-
-    names(df) <- sub(old.name, newname, names(df))
+    lname <- names(df)
+    lname[lname==old.name] <-  newname
+    names(df)<-lname
     push.data(dfname,df)
 
+    normal(" ")
     bold(old.fname)
     normal(" renamed as ")
     bold(newname)
+    normal("")
     catret("")
   }
 

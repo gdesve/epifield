@@ -38,6 +38,9 @@ checkmissing <- function(what, ..., sort=FALSE,showall=FALSE ) {
       nb <- length(r)
       vars <- list()
       showall <- TRUE
+      # -----------------------------------------------------------------------
+      # Todo : verify if it is a vector or if $ is part of the name
+      # -----------------------------------------------------------------------
       for (i in 1:nb) {
          name <- r[[i]]
          # if vars is long syntax then as.character doesn't work   XXX

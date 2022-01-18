@@ -13,7 +13,7 @@ get_option(op)
 option value
 }
 \description{
-retrieve a package option
+retrieve an epifield package option or parameter
 }
 \examples{
 get_option("option")

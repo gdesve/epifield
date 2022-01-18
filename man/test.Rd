@@ -4,7 +4,8 @@
 \name{test}
 \alias{test}
 \title{#title Test sample from outbreak}
-\format{A data frame with 10 rows and 5 variables:
+\format{
+A data frame with 10 rows and 5 variables:
 \describe{
   \item{X}{Sequential number}
   \item{age}{Age of cases}
@@ -12,7 +13,8 @@
   \item{tira}{outcome variable}
   \item{beer}{outcome variable}
 
-}}
+}
+}
 \source{
 Epiet case study
 }

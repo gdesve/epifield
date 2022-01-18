@@ -11,6 +11,8 @@ CC(cases, exposure, exact = F, full = FALSE)
 
 \item{exposure}{vector}
 
+\item{exact}{Compute an exact method}
+
 \item{full}{display all}
 }
 \value{

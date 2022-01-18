@@ -12,7 +12,9 @@
 #'
 #' @examples
 #' dat <- data.frame("lab"=c("A","B","C"),"nb"=c(5,10,20),"den"=c(100,120,150))
-#' incrates(dat$lab,dat$nb,dat$den)
+#' setdata(dat)
+#' incrates(nb,den, dat)
+#'
 incrates <- function(count,denom, data, per = 100000, conflvl = 0.95) {
       r <- as.list(match.call())
       if (missing(data)) {
